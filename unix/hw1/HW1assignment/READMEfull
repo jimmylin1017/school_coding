@@ -1,0 +1,1543 @@
+                          UNIX System Programming
+                         Programming Assignment #1
+                    "Using UNIX for a Game Using UNIX"
+
+Due: Friday, April 1  at  11:59 pm.
+
+Submission method: You will post to the course website. The TAs will post 
+                   instructions on how to do this.
+
+Submission rules: I REQUIRE you to FOLLOW THESE RULES:
+
+                  1. Submit two files: one tar file and one text file.
+
+                  2. The name of these files will be "<your student ID>.tar"
+                     and "<your student ID>.dunnet"
+                     You will, of course, replace "<your student ID>" with
+                     your unique ID number (B9.... or M9....)
+
+                  3. Submissions made after the deadline will be ignored.
+                     (That means, no late submissions on this assignment.)
+                     (By the way, if you don't turn in your assignments, you
+                      will probably Fail The Class. That's a Fact. So start
+                      early and ask questions.)
+                  
+                  This is a large class. Unless each of you follows the above
+                  rules, the TAs' work becomes so hard. So I INSIST that you 
+                  FOLLOW the above rules. If you don't, we won't accept your 
+                  homework.
+
+                  If you have questions about these rules, you may post your 
+                  questions to the course website.
+
+
+Getting help:   - The Professor has office hours on Monday from 12:20-2:20, 
+                  and on Friday from 10:00-12:00, in room 9037.  He can also 
+                  be reached by email.
+                - The TAs are also available to answer your questions.
+                - Questions about the assignment can be posted to the 
+                  Discussion Forum.
+                - You may also discuss the ideas of the assignment with your
+                  classmates. Such discussions can be quite helpful to your 
+                  learning -- IF you ONLY talk about the general concepts of
+		  the steps of the assignment.
+		  - If, however, you tell other students the specific details
+		    of your implementation, then you are not helping each other
+		    to learn; you are just doing the work for them.
+                    In other words, you are cheating. You CANNOT show another
+		    student ANY part of the answer to the assignment.
+
+Cheating policy:  We encourage students to form study groups. But this does not
+                  mean saring code. If students are found to be sharing work,
+		  they can receive a 0 for the entire course, or worse.
+                  It is cheating to let another student see your work, or to 
+                  let them look over your shoulder when your code is on the
+		  screen.
+		  A good way to know you cheated: if you have code that is in
+		  your solution just because another student told you to put
+		  it there, but you don't actually understand it.
+		  If you are still unsure, you can ask the TA for more
+		  explanation.
+                  We always look for evidence of cheating, so don't do it.
+                  (In any event, even if you do not get caught, those who 
+                  copy the homework will not learn the material, so they 
+                  will fail the exam.)
+
+Most Important    The programming assignments are a large part of the grade.
+Things to Know:	  This large point value means that, if you don't do them, you
+		  will fail.
+		  The large point value also explains why the policy against
+		  cheating is strictly enforced.
+		  
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Assignment Summary:
+
+Part 1. The Concept of the Assignment
+"""""""""""""""""""""""""""""""""""""
+In weeks 1 and 2, you learned about creating directories, files, hidden files,
+and links. You learned about navigating directory structures. You learned about
+command coordination. You learned about file redirection. And you learned a 
+variety of commands, including the alias command. In order to reinforce these
+concepts that you have learned, an assignment needs to be given. 
+
+I find that students sometimes enjoy assignments that involve writing programs
+for games. Now, it might seem that you are not yet able to do UNIX programming,
+because you don't know how to do loops or how to create variables. But there
+are some things that you actually do know. You know how to acheive conditional
+execution by using short-circuit evaluation command coordination. And you know
+how to create aliases. This turns out to be enough knowledge to convert the 
+UNIX command prompt system into a rudimentary text-based adventure game.
+
+In keeping with past years, your first assignment will be based on the 
+adventure game called dunnet. (But, each year, we implement a different part
+of the game.) The reason that I use dunnet is because it is already on your
+system -- it comes with emacs. (It's weird, I know. Why would a text editor 
+have games? But it does.) An interesting feature of dunnet is that one part
+of the game is meant to look like you are using UNIX. So this means that your
+homework solution is going to be a UNIX implementation of a game that pretends
+to be UNIX. 
+
+You don't actually need to play the original game in order for you to do the
+assignment. But, if you think it would be helpful to your understanding, then
+you can play this game by typing "emacs -batch -l dunnet" on the command line.
+(If that doesn't work (sometimes it doesn't -- I don't know why) then you can
+still play it from the games menu in emacs by pressing: alt-`, then t, then g,
+then a.)
+
+In the end, you will be creating two files. The ____.tar file creates the rooms
+and objects in the game. The ____.dunnet file creates the aliases that trick
+UNIX into becoming a game. Whenever you want to start the game, you will have 
+to type three commands on the UNIX prompt:
+  % sh <-- This command starts a new shell. (The purpose is so that the game
+           won't have as many side effects when it ends, because it will exit
+           the shell when it finishes. This will take you back to the shell you
+           had at startup. For example, the directory will be restored to where
+           you were before you ran the game.)
+  % source ~/____.dunnet <-- This command runs your script for defining the
+           aliases used in your game.
+  % dunnet <-- This command is one of the aliases that you will have defined
+           in your ~/_____.dunnet file. It actually begins the game. But, that 
+           does not mean that it runs a program (remember, this is an unusual
+           assignment where there is no real program). Instead, the "dunnet"
+           command is aliased to accomplish start up tasks: 
+            - Changing the prompt to "> ".
+            - Clearing the screen.
+            - Removing the HW1 directory, if present.
+            - Expanding the tar file that contains the initial state of the HW1
+              directory.
+            - Going to the starting room room (~/HW1/rooms/dead-end)
+            - Displaying the contents of this room
+           After finishing these tasks, the dunnet command is finished. But it
+           feels to the game player that the dunnet command is still running,
+           because the prompt symbol continues to be "> ".
+
+
+Part 2. Details of the Game Play.
+"""""""""""""""""""""""""""""""""
+The places where you can move to in this game are called rooms -- even though
+some of these "rooms" are outside scenes.
+
+Anyway, the player who runs dunnet will encounter puzzles, and you will
+implement the first few of these:
+1. There is a door that is locked, but where is the key?
+   Well, there is another "room" where there is a bear. If you feed the bear,
+   then it will leave and you can find the key left behind.
+
+2. Once you get past the door, you find a computer, but it isn't functional.
+   What is wrong with it? Answer: it is missing its CPU card.
+   But where is the card? Answer: it has been buried. When you get the card,
+   you can insert it into the computer.
+
+3. Once you fix the computer, you can type on it. But it asks you for a login
+   name and password. What can you type?
+   Well, there is a mailroom that had employee names on bins. One of the names
+   is Robert Toukmond. The computer you fixed was apparently his computer. His
+   login name can be guessed -- it is "toukmond". But what about his password?
+   Well, fortunately for us, Mr. Toukmond was very bad at choosing a password.
+   A little guesswork determines that his password was "robert".
+
+4. Once you log into the system, The fourth puzzle is recognize that reality
+   is not as it seems. You type "ls" and see something like:
+       $ ls
+       total 467
+       drwxr-xr-x  3 toukmond restricted      512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 ..
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 ls
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 ftp
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 echo
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 exit
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 cd
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 pwd
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 rlogin
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 uncompress
+       -rwxr-xr-x  1 toukmond restricted    10423 Jan 1 1970 cat
+       -rwxr-xr-x  1 toukmond restricted        0 Jan 1 1970 paper.o.Z
+       -rwxr-xr-x  1 toukmond restricted        0 Jan 1 1970 lamp.o
+       -rwxr-xr-x  1 toukmond restricted        0 Jan 1 1970 shovel.o
+
+   Here, you are supposed to notice that each of the ".o" files corresponds to
+   an object that you are carying (pun intended). (In the above example, you
+   are carrying a lamp and a shovel.)
+   Curious about what they are seeing, most people playing the game probably
+   experiment. They step away from the computer (by typing "exit"), then they
+   drop their shovel, then they go back to the computer (by retyping "type"),
+   then they type "ls" again. And just as they suspected, the shovel.o file is
+   gone.
+   
+5) The next puzzle is to read the piece of paper. looking at the "ls" listing
+   above, the file named "paper.o.Z" sounds like a compressed file, based on
+   its extension (.Z is the file extension for the "zippy" program -- a program
+   from back 40 years ago; we will use gzip instead, so our file will be named
+   "paper.o.gz").
+   So, the player runs uncompress (we will run gunzip), thereby creating a file
+   named "paper.o". Now, this file seems to be named the same as the objects
+   that the player is carrying -- could there now be a piece of paper in the
+   inventory?
+   Probably, the player first tries "cat paper.o", but finds that the game's
+   version of cat will only display text files. The player next will probably
+   try stepping away from the computer, and then checking their inventory. If
+   they do so, they find that they do, in fact, now have a piece of paper. So
+   they now examine the paper ("x paper") and find that it contains a password
+   ("worms"), which they will need later in the game (in a part of the game
+   that you won't need to implement).
+
+6) The next puzzle is to find the bracelet by looking around the file system.
+   The player types "cd" and "ls" an sees:
+       $ pwd
+       /usr/toukmond/
+       $ cd ..
+       $ ls
+       total 4
+       drwxr-xr-x  3 root     staff           512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 ..
+       drwxr-xr-x  3 toukmond restricted      512 Jan 1 1970 toukmond
+
+   So the player continues looking
+       $ cd ..
+       $ ls
+       total 4
+       drwxr-xr-x  3 root     staff           512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 ..
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 usr
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 rooms
+
+   So, what are these rooms? The player types:
+       $ cd rooms
+       $ ls
+       total 16
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff     2048 Jan 1 1970 ..
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 computer-room
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 mailroom
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 old-building-hallway
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 building-front
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 ne-sw-road
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 bear-hangout
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 se-nw-road
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 fork
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 e-w-dirt-road
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 dead-end
+       drwxr-xr-x  3 root     staff      512 Jan 1 1970 hidden-area
+
+   Could this be a list of the places in the game? The player will recognize
+   these directory names as being very descriptive of the places that had to
+   be visited in the game to get to this point. Perhaps the player tests the
+   theory, by looking at the room where they are right now (since they are
+   typing on the computer, that would be the computer-room.)
+       $ cd computer-room
+       $ ls
+       total 4
+       drwxr-xr-x  3 root     staff     512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff    2048 Jan 1 1970 ..
+       -rwxr-xr-x  3 root     staff    2048 Jan 1 1970 description
+       -rwxr-xr-x  3 root     staff       0 Jan 1 1970 shovel.o
+
+   The player notices the shovel.o file and recalls how they had dropped the
+   shovel (back when they were working out puzzle #4, as described above).
+   The player also notices the description file, and wants to know about it:
+       $ cat description
+       You are in a computer room.  It seems like most of the equipment has
+       been removed.  There is a VAX 11/780 in front of you, however, with
+       one of the cabinets wide open.  A sign on the front of the machine
+       says: This VAX is named 'pokey'.  To type on the console, use the
+       'type' command.  The exit is to the east.
+
+   The player recognizes that this is the very same text that they had seen
+   when they first had entered the computer room. Now that they understand how
+   these directories work, they are ready to solve the puzzle. They look around
+   all of the room directories, and they notice one with an odd name. They
+   don't remember ever visiting a room that could be described as a "hidden
+   area." So they want to find out more:
+       $ cd /rooms/hidden-area
+       $ ls
+       total 4
+       drwxr-xr-x  3 root     staff           512 Jan 1 1970 .
+       drwxr-xr-x  3 root     staff          2048 Jan 1 1970 ..
+       -rwxr-xr-x  3 root     staff          2048 Jan 1 1970 description
+       -rwxr-xr-x  1 toukmond restricted        0 Jan 1 1970 bracelet.o
+   There is a bracelet! How to get it? You try:
+       $ cp bracelet.o ~
+       cp: command not found.
+
+   What kind of UNIX is this? It doesn't have cp? Well, this is a VAX computer
+   from the early days of programming. But, to be fair, what this version of
+   UNIX lacks in terms of basic functionality, it makes up for in its ability
+   to warp reality.
+   Actually the reason that commands like cp and mv are not supported is so
+   that you have to solve the puzzle of "where is the bracelet." (And another
+   reason these commands are supported is because its just a game and the
+   programmers didn't actually implement UNIX. The pretended to have UNIX using
+   their game prompt, just as we will pretend to have the game using our UNIX
+   prompt.
+   So, where is the bracelet? The player types:
+       $ cat description
+       You are in a well-hidden area off to the side of a road.  Back to the
+       northeast through the brush you can see the bear hangout.
+
+   Oh, so it is southwest of the "bear hangout" -- and you know where that is,
+   because you had to go there to get the key to solve puzzle #1. So you go
+   back there:
+       $ exit
+   
+       You step back from the console.
+   
+       >e
+       Old Building hallway
+       >s
+       Building front
+       >sw
+       NE/SW road
+       >sw
+       Fork
+       >se
+       SE/NW road
+       >se
+       Bear hangout
+       >look
+       Bear hangout
+       You are standing at the end of a road.  A passage leads back to the
+       northwest.
+
+   See? There was no indication of a hidden area. But now that we know that it
+   is there, we can:
+       >sw
+       Hidden area
+       You are in a well-hidden area off to the side of a road.  Back to the
+       northeast through the brush you can see the bear hangout.
+       There is an emerald bracelet here.
+       >x bracelet
+       I see nothing special about that.
+       >get bracelet
+       Taken.  
+
+   OK. And those are the puzzles that you will need to implement (with a few
+   simplifications.
+
+
+Part 3. Some Simplifications
+""""""""""""""""""""""""""""
+With the material covered in the first two weeks, we don't actually know how
+to pass arguments to commands used in aliases. So all of our arguments just
+tack on the end of the command. For example:
+     	$ alias test='echo 1;echo 2'
+	$ test x
+	1
+	2 x
+
+See? The output was the same as if we had typed: echo 1; echo 2 x
+Similarly:
+	$ alias test='echo 1&&echo 2'
+	$ test x
+	1
+	2 x
+	$ alias test='echo 1||echo 2'
+	1
+
+In the || example above, the second command was not executed, due to short
+circuit evaluation. But the argument "x" was still assigned to it. (Thus, the
+x did not print, because echo2 did not execute.)
+Now this can even work with a file name:
+	$ cat x
+	cat: x: No such file or directory
+        $ alias test='echo 1 >'
+	$ test x
+	$ cat x
+	1
+
+OK? On a final note, since we don't know how to handle arguments, there are
+times in this homework where we will want to throw them away. The following
+alias is one way to do that:
+	$ alias test='echo no arguments please;echo >&/dev/null'
+	$ test x
+	no arguments please
+
+You see? Whatever arguments you pass into the "test" command, they all get
+shunted to /dev/null (i.e., they all get thrown away).
+In our homework, we make this more elegant by designing an ignore alias ("ig").
+We only need to define it once, and then we can use it whenever we want:
+	$ alias ig='echo >&/dev/null'
+	$ alias test='echo no arguments please;ig'
+	$ test x
+	no arguments please
+
+Now, since we don't know how to have arguments, we can't do some of the
+commands in dunnet. For example, we earlier used the command "x bracelet" to
+examine the bracelet. We solve this prblem by just not have the "x" command.
+Instead, we just say "alias x=cat". If you provide an object that is in the
+room, this will work -- but not for objects in the inventory. But that is OK,
+because we jsut think of this command as not really part of this assignment.
+(Also, you do not actually say "x shovel", but rather "x shovel.o". And for
+some items, you have to type a "." at the beginning, as in: "x .trees.o". This
+ugliness is because a properly working "x" is not part of this assignment.)
+
+The inability to have arguments also means that we cannot specify which object
+to pick up and which one to put down. We solve this by just causing "get" to
+pick up every portable item present in the current room. Similarly, "drop" will
+drop all items.
+
+The arguments also affect the process of fixing the computer. If you have the
+CPU card and if you are in the computer room, then you just type "insert",
+rather typing "insert card in computer", as dunnet would require.
+
+Another simplification is that the key disappears once you unlike the door.
+And another simplification is that objects display with the ".o" extension,
+as in:
+       >sw
+       Hidden area
+       You are in a well-hidden area off to the side of a road.  Back to the
+       northeast through the brush you can see the bear hangout.
+       You see: bracelet.o
+
+Another simplification is when pretending to be a weak-version UNIX. You will
+not need to look quite the same as the way that dunnet looks. File sizes can
+be different, and the directory structure will be more (i.e., the root "/" of
+dunnet will correspond to "~/HW1" for your implementation).
+
+
+Part 4. Provided Files
+""""""""""""""""""""""
+If you are reading this file, then you must have successfully untarred the
+homework tarfile. looking in the same directory, you will see some provided
+files:
+$ ls -A
+blocked       objects  tarred_file_listing  walkthrough.out
+descriptions  README   walkthrough.in
+
+The two files walkthrough.in and walkthrough.out relate to running your final
+program; they will be described in Part 6.
+The tarred_file_listing  file will be described in Part 5.
+The items blocked, descriptions, and objects are all directories. These
+directories contain text files, so that you won't have to type them -- you just
+have to copy them into the right directories. Lets have a look at them:
+$ cd descriptions
+$ ls -A
+bear-hangout_description    hidden-area_description
+building-front_description  mailroom_description
+computer-room_description   ne-sw-road_description
+dead-end_description        old-building-hallway_description
+e-w-dirt-road_description   se-nw-road_description
+fork_description
+$ cd ../objects
+$ ls -A
+.bins.o      .computer.o  bear.o     bracelet.o  lamp.o   shovel.o
+.coconuts.o  .trees.o     boulder.o  food.o      paper.o
+$ cd ../blocked
+$ ls -A
+card.o  description  fauxUNIX  key.o  login.c
+
+Notice that some these were hidden files that only appeared because I used the
+-A flag with ls.
+
+
+Part 5. Your First Task: Creating the Tarfile
+"""""""""""""""""""""""""""""""""""""""""""""
+This task will teach you cp, mkdir, ln -s, hidden files, chmod, gzip, seq, and
+tar.
+ 
+One of the reasons why we can create a text adventure out of UNIX is that the
+directory structure of a text adventure has some similarity with the room 
+structure of a text adventure. This can be seen in the way the dunnet game has,
+itself arranged the rooms. In Part 2 above, the discussion of Puzzle #6 had 
+explained how the rooms of the game are all treated as subdirectories under the
+rooms directory. You need to use mkdir to create these subdirectories.
+
+Now, each room contains a description of how it looks. (These are the files
+that I have given you in the "descriptions" directory -- but you need to rename
+each to "description", and to place each into the apropriate subdirectory.)
+
+Each room may also contain items. The first room (dead-end), for example,
+contains shovel.o, .trees.o, and .cococonuts.o. These files were all provided
+to you in the objects subdirectory -- but you need to copy them to the dead-end
+subdirectory. In addition this room contains files .tree.o and .coconut.o;
+these files were not given to you, because they are actually links to .trees.o
+and ,coconuts.o, respectively. We did this because the dunnet game lets you
+type x tree or x trees. Another reason we did it is to let you practice ln -s.
+This means that .tree.o and .coconut.o must be links in your anwer.
+
+The room to the east of the first room contains boulder.o, but it also contains
+.trees.o and .coconuts.o (as well as links for .tree.o and .coconut.o). This 
+room is the only case where the same object needs to be copied to more than one
+room. You are allowed to either have a copy in each room or to make one of them
+a link.
+
+Another room with an object that has multiple names is the computer room. The 
+file .computer.o may also be refered to as .vax.o or .cabinet.o (because that
+is what the original dunnet allows). Other rooms with objects are: the bear in
+the bear hangout, food to the northwest of the bear hangout, and the bins in
+the mailroom.
+
+But rooms have something else as well: links to the adjacent rooms. These links
+have a set format. A link name ".ne" would point to the directory of the room
+northeast of the current room. and ".w" points to the directory to the west.
+NOTE: When you make the link, be careful to refer to that adjacent directory
+      as ~/HW1/room/___ and NOT as ../___. The two may seem to be the same, but
+      just obey.
+
+
+For your reference, shown here are those links. (Note, if you print without a
+fixed-width font, then the figure below will not look right):
+ 
+                                       UNDEFINED
+                                           |
+                                           |n         
+                                 w         |            e
+                  computer-room <- old-building-hallway -> mailroom
+                                          /
+                                         /ne(s in reverse)
+                                        /
+                                 building-front
+                                      /
+                                     /ne
+                                    /
+                               ne-sw-road
+                                  /
+                                 /ne
+         e                e     /
+dead-end -> e-w-dirt-road -> fork
+                                \
+                                 \se
+                                  \
+                               se-nw-road
+                                   \
+                                    \se
+                                     \
+                                 bear-hangout
+                                     /
+                                    /sw
+                                   /
+                              hidden-area
+
+Above are the connections. Note, the reverse links also exist. For example, if
+A has a sw link to B, then B has a ne link to A. The exception to this is: the
+"hallway" goes south to the building-front (not sw as we would have expected).
+Another special feature is that the hallway has a locked door to the north for
+which there is no key. So the hallway contains an empty file named .n rather
+than .n being a link to a directory.
+
+Now, there is one final point about the rooms. the hallway is behind a locked
+door. You will model this by removing execute permission for this directory
+using chmod. Hint use chmod a-x, instead of u-x (I had some trouble with u-x).
+
+
+But rooms are not all that goes into the tarfile. Recall from Puzzle 5 in Part 
+2, the /usr/toukmond directory hold objects and other stuff. The objects are
+lamp.o (which you copy from the objects directory I am giving you), and 
+paper.o.gz (which you copy from my objects directory AFTER you use gzip on it).
+
+Now, if you look back at puzzle 2, this directory also contained files called
+cat, cd, echo, exit, ftp,gunzip,gzip,ls, pwd, and rlogin. These were included 
+in the game to help the player know which commands were supported in the broken
+UNIX of the game. In putting these files into the /usr/toukmond/directory, 
+their contents don't matter. But I wanted to be as close to the original game
+as possible. I noticed that their sizes in the game all list as 10423. So I
+looked for an easy way to get junk files of exactly that size. And I found an
+easy way: redirect the output of "seq 2306" into files with these names.
+(seq will lists all numbers from 1 to 2306, and the size just happens to be
+what we want.)
+
+As far as the original dunnet game is concerned, these are all of the files
+and directories that you need. But we also want a hidden directory ".blocked".
+We'll discuss this directory later. For now, the good news is that the contents
+that you need to place there are identical what I already gave you inside the 
+blocked directory.
+
+Now, once you have done all of these things, you can tar up the directory.
+
+But once you have the tar file, how can you verify that it is right? Well, that
+is what the tarred_file_listing file that I gave you is for. If you type this:
+$ mkdir testmytar
+$ cd testmytar
+$ cp ../<yourID>.tar .
+$ tar -xvf <yourID>.tar >& whatdidItar
+
+Then your whatdidItar file should be the same as my tarred_file_listing file.
+You can even compare them with the diff command (that we'll learn later).
+
+By the way, here is an idea of the contents of my file:
+$ cat tarred_file_listing
+HW1/
+HW1/.blocked/
+HW1/.blocked/card.o
+HW1/.blocked/description
+HW1/.blocked/fauxUNIX
+HW1/.blocked/key.o
+HW1/.blocked/login.c
+HW1/rooms/
+HW1/rooms/bear-hangout/
+HW1/rooms/bear-hangout/.nw
+HW1/rooms/bear-hangout/.sw
+HW1/rooms/bear-hangout/bear.o
+HW1/rooms/bear-hangout/description
+HW1/rooms/building-front/
+HW1/rooms/building-front/.ne
+HW1/rooms/building-front/.sw
+HW1/rooms/building-front/description
+HW1/rooms/computer-room/
+HW1/rooms/computer-room/.cabinet.o
+HW1/rooms/computer-room/.computer.o
+HW1/rooms/computer-room/.e
+HW1/rooms/computer-room/.vax.o
+HW1/rooms/computer-room/description
+...
+...
+HW1/usr/
+HW1/usr/toukmond/
+HW1/usr/toukmond/cat
+HW1/usr/toukmond/cd
+HW1/usr/toukmond/echo
+HW1/usr/toukmond/exit
+HW1/usr/toukmond/ftp
+HW1/usr/toukmond/gunzip
+HW1/usr/toukmond/gzip
+HW1/usr/toukmond/lamp.o
+HW1/usr/toukmond/ls
+HW1/usr/toukmond/paper.o.gz
+HW1/usr/toukmond/pwd
+HW1/usr/toukmond/rlogin
+
+
+
+Part 6. Some Sample Gameplay
+""""""""""""""""""""""""""""
+One of the provided files is "walkthrough.out". Lets look at this file, line 
+by line:
+head -3 walkthrough.out
+$ sh
+$ source ~/dunnet
+$ dunnet
+
+These first 3 lines show what you have to type each time you want to start the
+game. The first line is needed to allow UNIX to be restored to its original
+behavior once you quit the game (for reasons that we haven't learned yet).
+The second line acheives the effect of defining all of the aliases.
+The third line begins the game. (You will subsequently know that you are in the
+game, because the prompt symbol will change to a ">".)
+
+So now we want to see how the game runs. Lets see the start of the game output:
+head -10 walkthrough.out > tempfile; tail -7 tempfile
+Dead end
+You are at a dead end of a dirt road.  The road goes to the east.
+In the distance you can see that it will eventually fork off.  The
+trees here are very tall royal palms, and they are spaced equidistant
+from each other.
+You see: shovel.o
+> e
+
+The above text is very similar to the original dunnet game. Our current room
+is at the end of a road. There is a shovel here. Unlike the original game, the
+shovel has a ".o" in its name. Once we learn more UNIX, we can fix this.
+We havebeen told that we can go east. So, in the walkthrough, we try moving
+east, by typing "e", as shown above. The consequence is that we do move:
+
+head -15 walkthrough.out > tempfile; tail -5 tempfile
+E/W dirt road
+You are on the continuation of a dirt road.  There are more trees on
+both sides of you.  The road continues to the east and west.
+You see: boulder.o
+> w
+
+In the above text, we find that the road continues. Here there is a boulder.
+And we can go east or west. We can see above that the 15th line of the file 
+is "> w", which means that we decided to go back to the first room. Lets see
+what happened next:
+
+head -21 walkthrough.out > tempfile; tail -6 tempfile
+Dead end
+You see: shovel.o
+> e
+E/W dirt road
+You see: boulder.o
+> x boulder.o
+
+Looking at the above text, we find that the description of a room is much
+shorter if you have visited the room before. The last line above shows that we
+got curious about the boulder. Let's see what happened next:
+
+head -29 walkthrough.out > tempfile; tail -9 tempfile
+> x boulder.o
+It is just a boulder. It cannot be moved.
+> get
+There is nothing here that you can get.
+> l
+E/W dirt road
+You are on the continuation of a dirt road.  There are more trees on
+both sides of you.  The road continues to the east and west.
+You see: boulder.o
+
+Looking at the text above, we find that the boulder is too big to pick up.
+We also see the use of the "l" command, for looking. When you type "l", you
+can see the long description of the room, even for rooms that you've previously
+visited. Now, after examinimg the boulder, we wonder more about the scene
+described above. There were trees mentioned, even though they don't display
+in the list of things that we can see. So we wonder if we can see them:
+
+head -35 walkthrough.out > tempfile; tail -6 tempfile
+> x .trees.o
+They are palm trees with a bountiful supply of coconuts in them.
+> x .tree.o
+They are palm trees with a bountiful supply of coconuts in them.
+> x .coconuts.o
+I see nothing special about that.
+
+Above, we find that these items can also be examined, because they are also
+present. But, because the dunnet game is not supposed to display them, they've
+been given a "." at the front of their names. Note: examining these objects in
+this way is the worst part of our implementation, but we do not yet know enough
+UNIX to do anything better.
+Next, we wonder about other objects besides those in the scene. There are
+objects in other rooms and there are objects that we are carrying. What about
+them?
+
+head -41 walkthrough.out > tempfile; tail -6 tempfile
+> x shovel.o
+cat: shovel.o: No such file or directory
+> i
+Your inventory contains: lamp.o
+> x lamp.o
+cat: lamp.o: No such file or directory
+
+Here we see that the shovel does not display, because it is in the wrong room.
+We also see that we do own a lamp, but we can't examine it. According to the
+original dunnet we should be able to examine it. But, as we have already said,
+our "x" command is broken. It can only display what is in the room. So we
+decide to drop it so that we can have it in the room and can examine it:
+
+head -58 walkthrough.out > tempfile; tail -17 tempfile
+> drop
+You drop all your items.
+> i
+Your inventory contains:
+> l
+E/W dirt road
+You are on the continuation of a dirt road.  There are more trees on
+both sides of you.  The road continues to the east and west.
+You see: boulder.o  lamp.o
+> x lamp.o
+The lamp is hand-crafted by Geppetto.
+> get
+You pick up everything that you can.
+> get
+There is nothing here that you can get.
+> i
+Your inventory contains: lamp.o
+
+So everything works as it should. When both a lamp and a boulder are in the
+room, you see them both. But only the lamp can be picked up.
+
+After this, the file demonstrates some special case outputs:
+
+head -75 walkthrough.out > tempfile; tail -16 tempfile
+> w
+Dead end
+You see: shovel.o
+> dig
+You have nothing with which to dig.
+> get
+You pick up everything that you can.
+> i
+Your inventory contains: lamp.o	shovel.o
+> dig
+Digging here reveals nothing.
+> insert
+There is nothing to insert anything into.
+> type
+There is nothing on which you could type.
+> w
+You cannot go that way.
+
+
+Now let's demonstrate how the key is needed. To do this, we can skip ahead in
+the file:
+
+head -91 walkthrough.out > tempfile; tail -7 tempfile
+> ne
+Building front
+You are at the end of the road.  There is a building in front of you
+to the northeast, and the road leads back to the southwest.
+> ne
+You do not have a key that can open this door.
+
+
+Looking above we find that there is a locked door. but where is the key?
+We have to find the food and take it to the bear hideout to get the key. Let's
+jump forward to there:
+
+head -116 walkthrough.out > tempfile; tail -15 tempfile
+> se
+Bear hangout
+You are standing at the end of a road.  A passage leads back to the
+northwest.
+You see: bear.o
+> drop
+You drop all your items.
+The bear takes the food and runs away with it. He left something behind.
+> l
+Bear hangout
+You are standing at the end of a road.  A passage leads back to the
+northwest.
+You see: key.o  lamp.o  shovel.o
+> get
+You pick up everything that you can.
+
+
+So, with this key you can get through the door, lets jump to there:
+
+head -138 walkthrough.out > tempfile; tail -16 tempfile
+> ne
+Building front
+> i
+Your inventory contains: key.o  lamp.o  shovel.o
+> drop
+You drop all your items.
+> ne
+You do not have a key that can open this door.
+> get
+You pick up everything that you can.
+> ne
+Old building hallway
+You are in the hallway of an old building.  There are rooms to the east
+and west, and doors leading out to the north and south.
+> i
+Your inventory contains: lamp.o  shovel.o
+
+
+You see? If you are holding the key when you try to pass the dor, then you can
+unlock it. But then the key is gone. (There are implementation reasons why I
+chose to just remove the key.
+Now, let's see what happens next:
+
+head -148 walkthrough.out > tempfile; tail -10 tempfile
+> w
+Computer room
+You are in a computer room.  It seems like most of the equipment has
+been removed.  There is a VAX 11/780 in front of you, however, with
+one of the cabinets wide open.  A sign on the front of the machine
+says: This VAX is named 'pokey'.  To type on the console, use the
+'type' command.  The exit is to the east.
+The panel lights are steady and motionless.
+> type
+You type on the keyboard, but your characters do not even echo.
+
+
+Notice how the "type" command produces a different output than it did when we
+were at the dead-end room. Still though, typing doesn't work, because the 
+computer is missing its CPU card. Let's try to insert it:
+
+head -150 walkthrough.out > tempfile; tail -2 tempfile
+> insert
+You do not have the CPU card.
+
+Right, we don't have the card. But the error message is different than it was
+when tried it back at the dead-end room. Anyway, let's jump ahead to where we
+get that card:
+
+head -174 walkthrough.out > tempfile; tail -16 tempfile
+> l
+Fork
+You are at a fork of two passages, one to the northeast, and one to the
+southeast.  The ground here seems very soft. You can also go back west.
+> dig
+I think you found something.
+> l
+Fork
+You are at a fork of two passages, one to the northeast, and one to the
+southeast.  The ground here seems very soft. You can also go back west.
+You see: card.o
+> x card.o
+The CPU board has a VAX chip on it.  It seems to have
+2 Megabytes of RAM onboard.
+> get
+You pick up everything that you can.
+
+
+OK. Now with the card we can fix the computer. Let's jump ahead to where we go
+back to that room:
+
+head -193 walkthrough.out > tempfile; tail -13 tempfile
+> w
+Computer room
+> i
+Your inventory contains: card.o  lamp.o  shovel.o
+> drop
+You drop all your items.
+> insert
+You do not have the CPU card.
+> get
+You pick up everything that you can.
+> insert
+As you put the CPU board in the computer, it immediately springs to life.
+The lights start flashing, and the fans seem to startup.
+
+
+OK. So, you can fix the computer if you are holding the card and try to insert
+it into the computer if the you are in the computer room.
+No that the computer is fixed, let's see what has changed:
+
+
+head -203 walkthrough.out > tempfile; tail -10 tempfile
+> i
+Your inventory contains: lamp.o  shovel.o
+> l
+Computer room
+You are in a computer room.  It seems like most of the equipment has
+been removed.  There is a VAX 11/780 in front of you, however, with
+one of the cabinets wide open.  A sign on the front of the machine
+says: This VAX is named 'pokey'.  To type on the console, use the
+'type' command.  The exit is to the east.
+The panel lights are flashing in a seemingly organized pattern.
+
+
+So, the card is gone, and the description ofthe computer has changed.
+All that remains now is to: 1) Run type, 2) Enter the correct login and
+password, 3) Look around in your fake UNIX. But I don't do that in this
+walkthrough file. Instead We just quit:
+
+head -204 walkthrough.out > tempfile; tail -1 tempfile
+> quit
+
+
+Part 7. A Line By Line Description of Your ___.dunnet File
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Two general comments for the contents of the _____.dunnet File:
+1. You cannot use pipes (|) in this assignment.
+
+2. When designing a complex boolean expression, you sometimes need to use
+   parentheses. For example: a or (b and c) will skip b and c if a is true, but
+   a or b and c will not skip c when a is true.
+   When using parentheses in UNIX, however, you need to be a little careful,
+   because the parentheses create a new shell.
+   -Confused?
+    What this means is that changes made inside the parentheses don't last
+    outside of the parentheses (except for commands with side effects).
+    -Confused? Here is an example: 
+     % pwd;cd ..;pwd;(cd ..;pwd);pwd
+     /home/Me
+     /home
+     /
+     /home
+     %
+
+     You see? First I ran "pwd" and got the output "/home/Me"
+     Next I ran "cd .." and then "pwd". I therefore got the output "/home"
+     Next I ran "(" which created a new shell environment
+     Next I ran cd .. and then pwd. I therefore got the output "/"
+     Next I ran ")" which exited the new shell environment
+     Next I ran "pwd". I got the output "/home". This indicates that the change
+     of directory that was done inside of the parentheses was not retained when
+     the parentheses were ended.
+
+     But side effects do get retained. In the above example, the retained side
+     effect is the screen output. When the ")" executed, the new shell exited,
+     but it didn't try to remove the "/" that it had printed already.
+
+     Another side effect that will be retained is any change that you make to
+     the file system. So, if you create a file, it will still be there; if you
+     delete a file, it will still be gone.
+
+
+And now here is a line-by-line description of your dunnet script:
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 1: Type the following line exactly:
+
+        ls ~/_>&/dev/null||ln -s /dev/null ~/_
+
+        The purpose of the above line is to create a link to the null file from
+	your home directory (but only if it hasn't already been made).
+	Having done so, we can hereafter kill the output with fewer keystrokes.
+	That is, compare the following 2 commands (which are equivalent in
+	effect, but different in keystrokes needed to type):
+          % ls file_that_might_not_exist 2> /dev/null
+          % ls file_that_might_not_exist 2> ~/_
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 2: Type the following line exactly:
+
+        alias TRUE='ls>~/_'
+
+        The purpose of the above line is to create a command that you know will
+	evalute to true, but which will have no other effects.
+	- Why does it evaluate to true? Because it is impossible to fail to be
+	  able to list the contents of your directory (in normal usage).
+	- Why does it have no other effects? Because all output is killed. (Now
+	  you might notice that error messages aren't redirected -- but we just
+	  said that this ls command was impossible to fail, so, indeed, there
+	  is no output.)
+	- But why would we ever want to use this alias? Because of command
+	  coordination. Consider a situation where you want to execute com2
+	  only if com1 fails, but you want to execute com3 regardless of what
+	  com1 and com2 did. Then you can use:
+	  % com1 || com2 || TRUE && com3
+
+          You see? We know that a OR b OR true is always true, regardless of
+	  the values of a and b. Therefore, we know that com3 will always
+	  execute, regardless of the values of com1 and com2.
+
+          Now, the observant student will have noticed that there is an
+	  alternative solution to the above example:
+
+          % com1 || com2 ; com3
+
+          Yes, it is true that this has the same effect, in this example. But
+          there can be a differencein other examples (such as the one that
+	  occurs on line 5, described below).
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 3: Type the following line exactly:
+	  
+	alias ig='cd `pwd -P`;echo >& ~/_'
+
+        The purpose of the above line is to do two things:
+
+           1. cd `pwd -P`
+	   
+	   This creates an absolute path for the current directory. (That is
+	   why we use the -P flag).
+	   
+	   But what's the point? Well, I don't want to confuse you. That is why
+	   I am giving you the code instead of making you design it. But, here
+	   is a simple answer:
+	   Yes, by all appearances, cd `pwd -P` should have no effect (because
+	   you are just changing the directory to what it already was). But,
+	   for unimportant reasons, there is an effect when you use links for
+	   changing directories. (For example, if I was in the dead-end and I
+	   typed "cd .e".) The effect shows up after you do this many times
+	   (eg. cd .e;cd .w;cd .e;cd .w;cd .e;cd .w;cd .e;cd .w;cd .e;cd .w).
+	   The effect is that it will eventually stop letting you change
+	   directories (for unimportant reasons); the solution is to pwd -D to
+	   stop the links from piling up.
+	   Whatever. Who cares. The point is: I already gave you the code.
+
+           2. echo >& ~/_
+
+           The second purpose of the "ig" alias is the one that gives the alias
+	   its name: "echo >& ~/_" will cause all arguments to be ignored.
+	   What do I mean? Well in this homework (unlike in the actual dunnet
+	   game), we usually dont have multiword commands; the exception is the
+	   "x" command (e.g. "x shovel.o" is a multiword command).
+	   Now, since the original dunnet had multiword commands, I think that
+	   it is good for our version to not crash when you type them; instead
+	   we just ignore them.
+	   So "insert card in computer" is treated the same as just "insert"
+	   because the arguments get ignored.
+
+           But, how does "echo >& ~/_" cause arguments to be ignored? Well lets
+	   considethat we typed the following:
+	   % alias echo1='echo 1:'
+	   % alias echo2='echo 2:;ig'
+	   % echo1 arg1 arg2
+	   1: arg1 arg2
+	   % echo1 arg1 arg2
+	   2:
+	   %
+
+           You see? "echo1 arg1 arg2" = "echo 1: arg1 arg2" -> "1: arg1 arg2"
+	   But:"echo2 arg1 arg2" = "echo 2:; echo arg1 arg2>&/dev/null" -> "2:"
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 4: This line is intentionally left blank.
+	   
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 5. 
+Call this alias "see". It performs many steps to show what you see in the room:
+   1. Display the name of the room, if it has already been visited.
+   2. Describe the room, if it hasn't been visited and
+      then mark it as visited.
+   3. Display the items present.
+   4. Use the TRUE alias from line 2 to ensure that the "see" command always
+      indicates success when it is run. (This will be important later, when the
+      other aliases you create will use the "see" command with the expectation
+      that it always succeeds.)
+
+Furthermore, when you implement this alias, you may not use the ";" symbol.
+
+So, how to do it? Well you should use a hidden file in the current directory
+to indicate that the room has been visited. If this file has not been created,
+then the room has not been visited (so describe the room and create the hidden
+file). But, if the file is present, then the dunnet game shortens the way it
+describes the room to just its name.
+
+Q1: Where is the description of the room?
+A1: It is the file that is named "description" that you have already placed
+    into the directory for this room. (If you didn't make that tar file, then
+    you aren't read to create these aliases yet.)
+
+Q2: Where is the name of the room?
+A2: It is the first line of the "description" file.
+
+Q3: How to display just the first line of a file?
+A3: Lecture 1 taught us the command for this. Review your notes.
+
+Q4: How to know if the room has been visited?
+A4: You look for the hidden file.
+    Q4b: Yes, but how to look for the hidden file?
+    A4b: Use "ls"
+         Q4c: But that will display the file name. I don't want that.
+	 A4c: True, you don't want that. So send the output to /dev/null and
+	      just make use of the success or failure to control the command
+	      coordination operations.
+
+Q5: What do I name the hidden file?
+A5: I don't care. But it must be hidden.
+
+Q6: How do I create the hidden file?
+A6: Redirect the output of an echo.
+
+Q7: How to always display the objects in the room?
+A7: You will need to use parentheses, because I don't let you use ";" here.
+    Q7b: Yes, but how?
+    A7b: I think you can work out the boolean expression for this.
+
+Q8: How to actually make the objects display?
+A8: This is three commands:
+    The first checks for whether you actually do see any objects. In keeping
+    with the original dunnet game, there are really three types of objects:
+     1. Objects that you can see, examine, and get (eg., shovel.o or card.o)
+     2. Objects that you can only see and examine (eg., boulder.o or bear.o)
+     3. Objects that you can only examine (eg., .trees.o or .bins.o)
+        Note: the point that I am making here is that this third category is
+	not meant to be displayed. 
+
+    Q:So, how to check for objects? A:You look for files ending in ".o", but
+    you don't want to display them, you just want to test, for use with command
+    coordination.
+    
+    The second command prints "You see: ", but only if objects were found.
+    (This is the way the original dunnet works; rooms without objects don't
+    display the "You see: " message.)
+
+    The third command lists the objects.
+
+Q9: But my "You see: " is on a different line than the objects.
+A9: You will need a flag on your echo to keep it from going to the net line.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 6: Type the following line, but with the blank (____________) filled in:
+
+     	alias l='____________;see;ig'
+
+        The blank is a command whose effect is to remove the hidden file that
+        indicates that the room has been visited before. You see how it works?
+	The "l" command stands for "look." In the original game, revisited
+	rooms don't redisplay their descriptions unless you type "l" to look
+	again. By removing the hidden file and then executing see, we are
+	causing UNIX to do exactlywhat it would do the first time you visited
+	the room.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 7: Type the following line exactly:
+
+        alias x=cat
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 8: Type the following line exactly:
+
+ 	alias quit='exit 1'
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 9: This alias is for the "i" command (which stands for "inventory").
+
+        This is 6 commands, which are separated by 4 ";" and one "||"
+
+        Command 1: Goes to the ~/HW1/usr/toukmond directory
+	Command 2: Displays "Your inventory contains: ",without adding a \n
+	Command 3: List the objects in your directory
+        Command 4: If you have no objects, then command 3 would not have listed
+	           anything -- and that means the \n won't have been printed.
+		   It is therefore the task of command 4 to advance the display
+		   to the next line, but only in the case that command 3 had
+		   failed.
+        Command 5: Changes the directory back to what it was previously.
+	           Consult lecture one if you don't remember the correct
+		   argument to do this.
+		   Note: the same effect could have been achieved by putting
+		   parentheses around commands 1-4, but that is not the method
+		   you are being asked to use here.
+        Command 6: This command is "ig". In fact, all of the remaining aliases
+	           except for the last two ("type" and "dunnet") will end with
+		   ";ig". I therefore won't kee[ mentioning it for each one.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 10: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 11: This line defines the alias for "e"
+         It is implemented as three commands (four if you count the ig at the
+	 end, which I hereafter assume without gurther mention).
+
+        command 1: Change your directory to .e
+	command 2: Run "see", but only if command 1 was successful
+	command 3: Display an error message about not being able to move in
+	           that direction, but only if command 1 had failed. (Recall
+		   that command 2 cannot fail, because line 5 ended with TRUE.)
+		   
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Lines 12-16: These are just like Line 11, except for the other directions, but
+             not for "n" or "ne"; the aliases for those will be described on
+	     Lines 17 and 18, below...
+	     
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 17: This is the alias for "n". It is actually not possible to move north
+         until later in dunnet: There is only one room (the hallway) with an
+	 exit to the north, and that exit is a door which you cannot unlock.
+	 So your implementation of the n command does not involve trying to
+	 change the directory. Instead, it is just a question of which error
+	 message to display: the one that says that you cannot go that way, or
+	 the one that says that you don't have the key.
+	 And, how to decide on the proper error message? It depends on whether
+	 there is a hidden file name .n in your current directory. (If you will
+	 recall, your tarfile contains such a file in the hallway's directory.)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 18: This is the alias for "ne". It has four possible outcomes:
+         1. You move to the north east
+         2. You move to the north east and destroy the key from your inventory
+	 3. You display an error message that you cannot move in that direction
+	 4. You display an error message that you don't have the key
+
+         Note that outcomes 3 and 4 are very similar; in both cases an attempt
+	 to "cd .ne" will fail: in one case, because there's no such directory,
+	 in the other case, because the directory does not give you permision
+	 to enter it. (Recall that your tarfile had this directory initially
+	 set to not have permision. The way you get permission is by picking up
+	 the key; this is implement in line 20, below).
+
+         So, how to determine which error message to give (assuming that you do
+	 need to give an error message)? Well you can distinguish the building
+	 front from all other rooms by looking for some distingushing feature
+	 in its location. Unfortunately, we do not have any unique files in
+	 this directory. What I mean is: it is not like line 17, where we just
+	 had to look for the .n file since no other rooms would have it.
+	 We could look for .ne/.n but that won't work because the door is
+	 locked; if you can't go to the north-east then you can't look into its
+	 directory for the .n file.  So, instead, you will have to look for
+	 something to the southwest (i.e.,  .sw/.sw/___)
+
+         The next question is how to distinguish outcomes 1 and 2. But, if you
+	 were able to distinguish outcomes 3 and 4 then you should be able to
+	 do the same thing here.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 19: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 20: This is the alias for "get"
+         Here, there are two special considerations:
+	 1.If you pick up the key, you have to give yourself permission to the
+	   old-building-hallway. Hint: use a+x with your chmod, because u+x has
+	   some unexpected behavior.
+         2.Not every visible object can be picked up. (i.e., not the bear or
+	   the boulder). So you want files that: 1) don't start with ".", 2) do
+	   end in ".o", and 3) don't match to "bear.o" or "bolder.o".
+	   Q:How to get just the right ones? A:Use a very special file wildcard
+	     patern. Hint: list all of the objects that can be picked up and
+	     find a way to distinguish them from "bear.o" and "boulder.o".
+	     Note, you must use just one pattern, or else command coordination
+	     won't work. (For example: "ls key.o lamp.o||echo not present" will
+	     print "not present" if either object was not present, which is not
+	     what you want. Hence, you have to use just one pattern. And just
+	     to clarify, you don't use "ls" to pick up objects, that was just
+	     an example.)
+         So now, how to do it? Well its two parts -- and these two parts are
+	 separated by a ";".
+	 Part 1. See if the key is present. If so, give yourself permisions
+	         to move northeast from the building front.
+         Part 2. Try to move the portable objects into your inventory (i.e.,
+	         the "toukmond" directory). If you succeed in picking up
+		 anything, then display "You pick up everything you can."
+		 If you don't succeed, then display "There is nothing here that
+                 you can get."
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 21: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 22: This is the alias for "drop"
+         Here, there are two special considerations:
+	 1.If you drop the key, you have to remove permission to the
+	   old-building-hallway. Hint: use a-x with your chmod, because u-x has
+	   some unexpected behavior.
+         2.If you drop the food in front of the bear, then both the bear and
+	   food disapear (i.e., they are removed), but the key appears (i.e.,
+	   it is moved from the .blocked directory to the current directory.)
+	   
+         Also, there are 3 possible display messages:
+            "You drop all your items."
+            "You have nothing to drop."
+            "The bear takes the food and runs away with it. He left something
+	     behind."
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 23: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 24: This is the alias for "dig".
+         There are three possibilities:
+	 1. That you don't have shovel, so you get an appropriate message.
+	 2. That you do have a shovel, but digging reveals nothing. This will
+	    happen if you aren't at the fork, or if you are at the fork but
+	    have already dug up the card.
+	 3. That you dig up the card. This produces an appropriate message and
+            also causes the card to appear.
+
+
+Q1: How to know that I have the shovel?
+A1: shovel.o will be in the toukmond directory.
+
+Q2: How to know that I am at the fork?
+A2: Although there is no distinguishing feature at the fork, the road to the
+    west leads to a boulder. That boulder is a unique and unmovable item. So,
+    if there is a boulder to the west, then you must be at the fork.
+
+Q3: How do you "create" the card?
+A3: you move it from the .blocked directory.
+
+Q4: How do you know that you didn't already create the card? (In other words,
+    how do you get the "I think you found something" message to display only
+    once?)
+A4: Well, if you can't move it from the .blocked directory, then you must have
+    already moved it.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 25: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 26: This is the alias for "insert".
+         There are three possibilities:
+	 1. That you are not near the computer, so you get a message about not
+	    seing anything to insert into.
+	 2. That you are near the computer but don't have the card, so you get
+            a message about not having the CPU card. (Note: one way that this
+	    could happen is if you already fixed the computer.)
+	 3. That you are successful. In this case, four things happen (but not
+	    in the following order):
+	     i. A file called "computeron" is created in the .blocked directory
+	     ii. An appropriate message displays (Actually, it is a two-line
+	         message, so it requires 2 echos.)
+	     iii. The description of the room is updated to reflect the change.
+	     iv. The card is destroyed.
+
+I'll give you the structure of this line, with each blank being a command:
+
+alias insert='_____&&(_____&&_____&&_____&&_____&&_____||_____)||_____;ig'
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 27: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 28: This is the alias for "type".
+         There are three possibilities:
+         1. You are not in the computer room, so you get a message about how
+	    there is nothing to type on.
+	 2. You are in the computer room, but the computer is not fixed, so you
+	    get a message about how the keyboard doesn't respond.
+         3. You are successful. In this case, things get a bit unusual. The
+	    issue is that we don't know much about UNIX scripts yet. We don't
+	    know how to create variable or to perform loops. (The only reason
+	    that we can even implement this game is because we are using the
+	    command prompt system to loop for us.)
+	    But I could not think of how to get the desired behavior of dunnet
+	    for this part, given the restrictions of what we know. So instead
+	    I wrote a C program to do the login for you.
+	    I didn't make you write it, because C programming isn't part of the
+	    course. But, I reasoned that it would be good for you to see a C
+	    program used in UNIX, because it shows how to pass arguments and
+	    how to return a success or fail signal. Let's take a look at it:
+
+% cat -n HW1/.blocked/login.c | cut --complement -c1-4,7 
+ 1#include <stdio.h>
+ 2#include <string.h>
+ 3int printmsg()
+ 4{ printf("\nWelcome to Unix\n\n");
+ 5  printf("Please clean up your directories.  The filesystem is getting full.\n");
+ 6  printf("Our tcp/ip link to gamma is a little flaky, but seems to work.\n");
+ 7  printf("The current version of ftp can only send files from your home\n");
+ 8  printf("directory, and deletes them after they are sent!  Be careful.\n");
+ 9  printf("\nNote: Restricted bourne shell in use.\n\n");
+10  return 0;
+11}
+12int main(int argc, char **argv)
+13{ int i;
+14  char N[80],P[80];
+15  printf("\n\nUNIX System V, Release 2.2 (pokey)\n\n");
+16  for (i=0; i<3; i++)
+17  { printf("login: ");
+18    gets(N);
+19    printf("password: ");
+20    gets(P);
+21    if ((strcmp(N,argv[1])==0)&&(strcmp(P,argv[2])==0))
+22      return printmsg();
+23    printf("Login incorrect.\n\n");
+24  }
+25  return 2;
+26}
+
+
+Notice line 12. This does two important things. First it declares main() to be
+of integer type; this will allow the success or failure code to be returned
+from the program back to the operating system upon program completion. Second,
+it declares to arguments: argc and argv. The argc variable will indicate how
+many command line arguments were supplied to the program when it was executed.
+The argv variable is an array of strings for each of these arguments (argv[0]
+is the name of the program's executable, argv[1] is the name of the first
+command argument, etc. ).
+
+Notice line 21. It indicates that the program is meant to be run with two
+command line arguments: the first is the login and the second is the password.
+
+Finally, notice lines 22 and 25. These lines return a 0 if the user was
+successful at logging in and a nonzero-number (in this case, "2") if the user
+was unsuccessful.
+
+
+
+Now, remember how I said "3. You are successful. In this case, things get a 
+bit unusual"? Well we are not done with the unusualness. When the login works,
+then you need to break UNIX. This is done by running a script. I could have
+asked you to write the script, but the homework was long enough, so I wrote it
+for you. Here it is, take a look:
+
+% cat -n HW1/.blocked/fauxUNIX
+alias ig='echo >/dev/null'
+alias no='echo command not found;ig'
+alias l8r='echo command not implemented in homework 1;ig'
+alias cp=no; alias mv=no; alias rm=no; alias mkdir=no; alias rmdir=no
+alias ftp=l8r; alias rlogin=l8r
+alias ls="ls -dlS * . ..;ig"
+PS1="$ "
+cd ~/HW1/usr/toukmond
+
+
+OK. We are done with the unusualness. But how do we get Line 28 to work? Well,
+fill in the blanks below:
+
+alias type='____||echo There is nothing on which you could type.;_____&&_____&& echo You type on the keyboard, but your characters do not even echo.;_____&&____&&~/HW1/.blocked/login.x toukmond robert&&exit 0>&~/_'
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 29: This line is intentionally left blank.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Line 30: This is the alias for "dunnet". Type it exactly as follows:
+
+         alias dunnet='clear;PS1="> ";cd;chmod u+x HW1/rooms/old-building-hallway;rm -rf HW1;tar xvf HW1.tar >& ~/_;cd HW1/.blocked;gcc -o login.x login.c; cd ../rooms/dead-end;see'
+
+         So, what does the above alias do? It clears the screen, sets the
+	 prompt symbol, removes the HW1 directory for the purpose of recreating
+	 it fresh (which requires that the directories must all have permission
+	 to enter them -- building-halway, I'm looking at you).
+         It also compiles the login.c file described earlier in Line 28. (If,
+	 by the way, your version of UNIX doesn't have gcc, its OK. You can
+	 just remove the gcc command from line 30. The reason is that the game
+	 is pretty much finished by the time that login.x is run.)
+	 
+         It then goes to the place where the game is supposed to start and
+	 runs the see command to display it.
+
+	 Warnings: don't run the dunnet alias if you have not first created the
+	 HW1.tar file, becaus the alias will erase the HW1 directory and then
+	 attempt to rebuild it fresh, from your tarfile.
+         And don't put your dunnet script, your tar file, or anything else
+	 important inside of the HW1 directory structure.
+	 
+Part 8. Some Final Thoughts on How the Game Works
+"""""""""""""""""""""""""""""""""""""""""""""""""
+You will recall the following text, from Part 1, near the top of this README
+file:
+ "Whenever you want to start the game, you will have to type three commands
+  on the UNIX prompt:
+  % sh <-- This command starts a new shell. (The purpose is so that the game
+           won't have as many side effects when it ends, because it will exit
+           the shell when it finishes. This will take you back to the shell you
+           had at startup. For example, the directory will be restored to where
+           you were before you ran the game.)
+  % source ~/____.dunnet <-- This command runs your script for defining the
+           aliases used in your game.
+  % dunnet <-- This command is one of the aliases that you will have defined
+           in your ~/_____.dunnet file. It actually begins the game. But, that 
+           does not mean that it runs a program (remember, this is an unusual
+           assignment where there is no real program). Instead, the "dunnet"
+           command is aliased to accomplish start up tasks"
+
+
+Looking next in part 7 for the description of line 8, we find that it is:
+ 	alias quit='exit 1'
+
+Well, "exit" is the UNIX command to exit a shell. So when you were told that
+you run three commands ("sh", "source ~/__.dunnet", and "dunnet"), the quitting
+of the game will exit the shell that you had entered when you typed "sh". This
+will undefine all of the aliases, restore the present-working-directory (pwd),
+and restore the prompt. What it won't undo is side effects, such as removing
+files that were created during the running of the game.
+
+The second of the three commands uses "source". Source is the UNIX command to
+prevent the creating of a new shell. Consequently, the aliases defined in your
+____.dunnet script will remain after the script exits. (Note: your script does
+not end with an exit command, but it does nonetheless end (it is, after all,
+just 30 lines, with no loops); and when it ends, the shell created by running
+the script is exited (or would have been exited if the script had created a
+shell -- i.e., if the source command had not been used).
+
+The third command runs the alias that prepares everything for the start of the
+game. For the most part, this alias did not need to be created, since the tasks
+performed by the alias could have been directly performed within the script
+instead. But there were some subtle reasons for needing to introduce this third
+step.
+
+At the risk of confusing you even further, I must now point out that I chose
+to mislead you a bit in part 1, when I said that those were the three commands
+to type. In actual fact, the three commands are
+sh && source ~/HW1/fauxUNIX
+source ~/____.dunnet
+dunnet
+
+What this new version does is to allow the game's broken UNIX to run IF the
+game indicates a successful completion (i.e., the exit happens from a type
+command rather than from a quit command).
+
+Now, in the provided file "walkthrough.out", I used just sh, not sh&&source ...
+This was because you don't actually need to test fauxUNIX, it is a script that
+I gave you.
+
+By the way, you will also notice that I gave you a file called "walkthrough.in"
+You can use this file to test your homework. Here is how I created the
+walkthrough.out file:
+
+
+sh
+source ~/dunnet
+dunnet
+walkthrough.in>walkthrough.out
+emacs walkthrough.out   <-- this step was just to fix an oddity for places
+                            where the "i" command was used: this command has
+			    an "ls" in it. And, as we've found seen in lecture,
+			    ls displays different when redirected.
+			    
+Another note on walkthrough.in: each line echos something and then actually
+executes it (with the exception of the first three lines). This is done so that
+the walkthrough.out file can show both: what the use typed (from echo) and what
+the effect was.

@@ -1,0 +1,8 @@
+37c37
+< cat: shovel.o: No such file or directory
+---
+> cat: shovel.o: 沒有此一檔案或目錄
+41c41
+< cat: lamp.o: No such file or directory
+---
+> cat: lamp.o: 沒有此一檔案或目錄
