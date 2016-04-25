@@ -1,0 +1,14 @@
+#!/usr/bin/tcsh
+while 1
+	while 1
+		echo -n "\nEnter your choice: "
+		set ch = $<
+		echo $ch | grep -o '.' | grep -i '[A-X]' | grep -i '[A-X]' && \
+		echo $ch | grep -o '.' | grep '[0-9]' | grep '[0-9]' && break
+		echo "Invalid choice. Please try again."
+	end
+	expr `echo $ch | grep -o '.' | sort | tr '\na-h' '+1-8' | grep -o '.' | tr '\n' ' ' | xargs echo "8 \*"` -8 > tmp
+	set x = `cat tmp`
+	if ( $1 != $ch ) cat memboard | tr ',' '\n' | grep -n '[A-X]' | grep '^'$x':' && exit $x
+	echo "That place is already revealed. Please try again."
+end
