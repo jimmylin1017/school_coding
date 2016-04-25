@@ -58,6 +58,7 @@ int main()
 		philosopher_num[i] = malloc( sizeof( int ) );
 		*philosopher_num[i] = i;
 		pthread_mutex_init( &s[i], NULL );
+		pthread_mutex_lock( &s[i] );
 		philosopher_thread[i] = i;
 		pthread_create( &philosopher_thread[i], NULL, philosopher, (void*) philosopher_num[i] );
 	}
@@ -116,7 +117,7 @@ void take_forks( int i ) /* i: philosopher number, from 0 to N1 */
 	state[i] = HUNGRY; /* record fact that philosopher i is hungry */
 	test(i); /* try to acquire 2 forks */
 	pthread_mutex_unlock( &mutex ); /* exit critical region */
-	pthread_mutex_lock(&s[i]); /* block if forks were not acquired */
+	pthread_mutex_lock( &s[i] ); /* block if forks were not acquired */
 }
 
 void put_forks( int i ) /* i: philosopher number, from 0 to N1 */
@@ -136,7 +137,7 @@ void test( int i ) /* i: philosopher number, from 0 to N1 */
 	{
 		DEBUG("%d EATING\n", i);
 		state[i] = EATING;
-		pthread_mutex_unlock(&s[i]);
+		pthread_mutex_unlock( &s[i] );
 	}
 }
 
@@ -151,6 +152,9 @@ void eat( int i )
 {
 	DEBUG("In eat( %d )\n", i);
 	int eat_time = rand() % 3 + 1;
+
+	//printf("%d eating\n",i);
+
 	sleep( eat_time );
 }
 
