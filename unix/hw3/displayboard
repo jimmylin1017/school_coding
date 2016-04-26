@@ -2,19 +2,19 @@
 clear
 if( "$3" == "-c" )	then
 	echo "   a  b  c  d  e  f  g  h\n"
-	grep -o ' [A-X], [A-X], [A-X], [A-X], [A-X], [A-X], [A-X], [A-X],' memboard | grep -n '.' | tr ':,' '  ' > tmp
+	grep -o ' [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_],' memboard | grep -n '.' | tr ':,' '  ' > tmp
 	seq 10 10 50 >> tmp
-	sort tmp | grep -C0  '[0-6]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X] ' | __2__
+	sort tmp | grep -C0  '[0-6]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_] ' | tr -d '-'
 	echo "\n-------------------------\n"
 endif
 cat memboard | tr ',' '\n' | cat -n > file
-grep -e '^'$1'\t' -e '^'$2'\t' file > tmp
-
-grep -v $2 file | tr '[A-X]' '?' >> tmp
-sort tmp | tr __2__ | tr '\n\t' ', ' > tmp2
+grep -e '\<'$1'\>' -e '\<'$2'\>' file > tmp2
+set v = `cat tmp2 | tr -cd '[A-X\n]' | uniq -c | tr -cd '0-9'` # v = 2 is true
+grep -v -e '\<'$1'\>' -e '\<'$2'\>' file | tr '[A-X]' '?' >> tmp2
+sort tmp2 | tr -cd 'A-X?_\n\t' | tr '\n\t' ', ' > tmp3
 echo "   a  b  c  d  e  f  g  h\n"
-grep -o ' [A-X], [A-X], [A-X], [A-X], [A-X], [A-X], [A-X], [A-X],' memboard | grep -n '.' | tr ':,' '  ' > tmp
-seq 10 10 50 >> tmp
-sort tmp | grep -C0 -w '[0-6]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X]  [A-X] ' | __2__ | grep --color
+grep -o ' [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_],' tmp3 | grep -n '.' | tr ':,' '  ' > tmp4
+seq 10 10 50 >> tmp4
+sort tmp4 | grep -C0  '[0-6]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_] ' | tr -d '-'
 echo
 exit $v

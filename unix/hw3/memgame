@@ -5,12 +5,16 @@ set x = 0
 set y = 0
 set counter = 0
 while 1
-	./displayboard x y -c
-if ( $? == 0 ) then
-	cat memboard | tr `head -1` '_' > tmp
-	cat tmp > memboard
-	grep '[A-X]' && echo 'Congratulations! Finished in 26 moves.' && exit
-endif
-./getchoice 0
-
-./displayboard __1__ 0 __3__
+	./displayboard $x $y $1
+	if ( "$?" == "2" ) then
+		cat memboard | tr `cat tmp2 | tr -cd 'A-X' | head -1` '_' > memtmp
+		cat memtmp > memboard
+		grep '[A-X]' memboard >&/dev/null || (echo 'Congratulations! Finished in 26 moves.' && exit) # readme has bug
+	endif
+	./getchoice 0
+	set x = "$?"
+	./displayboard $x 0 $1
+	./getchoice $x
+	set y = "$?"
+	@ counter = $counter + 1
+end
