@@ -9,7 +9,7 @@ while 1
 	if ( "$?" == "2" ) then
 		cat memboard | tr `cat tmp2 | tr -cd 'A-X' | head -1` '_' > memtmp
 		cat memtmp > memboard
-		grep '[A-X]' memboard >&/dev/null || (echo 'Congratulations! Finished in 26 moves.' && exit) # readme has bug
+		grep '\( _,\)\{48\}' memboard >& /dev/null && echo "Congratulations! Finished in $counter moves." && exit # readme has bug
 	endif
 	./getchoice 0
 	set x = "$?"

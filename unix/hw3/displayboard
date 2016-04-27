@@ -15,6 +15,6 @@ sort tmp2 | tr -cd 'A-X?_\n\t' | tr '\n\t' ', ' > tmp3
 echo "   a  b  c  d  e  f  g  h\n"
 grep -o ' [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_], [A-X?_],' tmp3 | grep -n '.' | tr ':,' '  ' > tmp4
 seq 10 10 50 >> tmp4
-sort tmp4 | grep -C0  '[0-6]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_] ' | tr -d '-'
+sort tmp4 | grep -C0  '[0-6]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_]  [A-X?_] ' | tr -d '-' | grep --color -C1 '[A-X ]'
 echo
 exit $v
