@@ -1,4 +1,4 @@
-# school_coding
+# School Coding
 
 ## Grade 1
 
