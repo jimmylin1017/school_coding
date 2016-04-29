@@ -1,5 +1,5 @@
 #!/usr/bin/tcsh
-echo ABCDEFGHIJKLMNOPQRSTUVWX | grep -no '.' | tr -d '0-9' | tee letters | tr 'A-X' 'a-x' >> letters
+echo ABCDEFGHIJKLMNOPQRSTUVWX | grep -no '.' | tr -d '0-9' > letterstmp ; cp letterstmp letters ; cat letterstmp | tr 'A-X' 'a-x' >> letters
 sort -R letters | tr 'a-x:\n' 'A-X ,' > memboard
 set x = 0
 set y = 0
