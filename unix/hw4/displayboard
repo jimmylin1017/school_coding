@@ -1,0 +1,14 @@
+#!/usr/bin/tcsh
+clear
+if ( $3 == "X-c" ) then
+  echo "   a  b  c  d  e  f  g  h"
+  cat memboard | sed 'N;N;N;N;N;N;N;s/\n/  /g' | sed '=' | sed 'N;s/\n/  /g' | sed -f sedfile
+  echo "\n-------------------------\n"
+endif
+cat memboard | sed "$1"'bL;'"$2"'bL;s/[^_]/?/;:L' > f3
+echo "   a  b  c  d  e  f  g  h"
+cat f3 | sed 'N;N;N;N;N;N;N;s/\n/  /g' | sed '=' | sed 'N;s/\n/  /g' | sed -f sedfile | grep --color '[A-Z1-6?_]'
+echo
+set x = `cat f3 | sed -n 's/[A-X]/&/p' | uniq -c | sed -n 's/2 [A-X]/1/p'`
+if ( $x == 1 ) cat memboard | sed -n "$1"'bL;'"$2"'bL;p;d;:L;s/./_/p' > f3
+exit $x
