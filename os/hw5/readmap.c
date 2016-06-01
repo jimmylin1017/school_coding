@@ -36,7 +36,10 @@ int main(int argc, const char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    while(1)
+    if(!text_len)
+        printf("empty file\n");
+
+    while(text_len)
     {
         char c;
 

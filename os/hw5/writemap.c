@@ -16,7 +16,15 @@
 int main(int argc, const char *argv[])
 {
 
-    int fd = open("text", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    int fd;
+    int choose;
+    printf("1:empty file\nelse:exist file\n");
+    scanf("%d", &choose);
+    getchar();
+    if(choose == 1)
+        fd = open("text", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    else
+        fd = open("text", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
     if(fd == -1)
     {
