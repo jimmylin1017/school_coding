@@ -32,12 +32,12 @@ void run_command(char **myArgv) {
              * Fill in code.
 			 */
             if (is_background(myArgv) == FALSE)
-                waitpid(-1, &stat, 0);
+                waitpid(pid, &stat, 0);
 
             /* Optional: display exit status.  (See wstat(5).)
              * Fill in code.
 			 */
-
+            printf("%d\n", stat);
             return;
 
         /* Child. */
@@ -48,11 +48,8 @@ void run_command(char **myArgv) {
             if(is_background(myArgv) == TRUE)
             {
                 int i = 0;
-                while (myArgv[i] != '\0')
-                {
-                    if (!strcmp(myArgv[i], "&")) myArgv[i] = '\0';
-                    i++;
-                }
+                while (myArgv[i] != '\0') i++;
+                if (!strcmp(myArgv[i-1], "&")) myArgv[i-1] = '\0';
             }
             execvp(myArgv[0], myArgv);
 
