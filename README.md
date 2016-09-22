@@ -8,16 +8,12 @@
 
 1. data structure
 2. pop
-3. os
-4. unix
+3. oop
+4. os
+5. unix
 
 ## Grade 3
 
 1. sp : network system programming
 
 
-
-
-## NOT
-
-1. oop
