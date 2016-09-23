@@ -37,7 +37,19 @@ void run_command(char **myArgv) {
             /* Optional: display exit status.  (See wstat(5).)
              * Fill in code.
 			 */
-            printf("%d\n", stat);
+            printf("status : %d\n", stat);
+            
+            printf("WIFEXITED : %d\n", WIFEXITED(stat));
+            printf("WEXITSTATUS: %d\n", WEXITSTATUS(stat));
+            /*
+            printf("WIFSIGNALED : %d\n", WIFSIGNALED(stat));
+            printf("WTERMSIG: %d\n", WTERMSIG(stat));
+            printf("WIFSTOPPED : %d\n", WIFSTOPPED(stat));
+            printf("WSTOPSIG : %d\n", WSTOPSIG(stat));
+            printf("WIFCONTINUED : %d\n", WIFCONTINUED(stat));
+            printf("WCOREDUMP : %d\n", WCOREDUMP(stat));
+            */
+            
             return;
 
         /* Child. */

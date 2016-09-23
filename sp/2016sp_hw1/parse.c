@@ -72,12 +72,7 @@ char ** parse(char *line) {
 		printf("[%d] : %s\n",i,newArgv[i]);
 		i++;
 	}
-/*
-	for (i = 0;i < count;i++)
-	{
-		printf("[%d] : %s\n",i,newArgv[i]);
-	}
-*/
+	
   	return newArgv;
 }
 

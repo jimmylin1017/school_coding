@@ -40,8 +40,9 @@ static void bi_echo(char **argv) {
 	}
 }
 /* Fill in code. */
-void bi_finish()
+void bi_finish(char **argv)
 {
+	free_argv(argv);
 	exit(0);
 }
 
