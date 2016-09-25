@@ -24,7 +24,11 @@ static void bi_echo(char **argv) {
 	if (!strcmp(argv[1], "-n"))
 	{
 		int num = atoi(argv[2]);
-		if (num > 0)
+
+		int count = 0;
+		while (argv[count] != '\0') count++;
+
+		if (num > 0 && count-3 >= num)
 			printf("%s\n", argv[2+num]);
 		else
 			printf("input error!\n");
