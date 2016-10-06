@@ -17,7 +17,7 @@ char ** parse(char *line) {
   	char **newArgv;
 
   	/* Nothing entered. */
-  	if (line == NULL || strcmp(line,"\n")==0) {
+  	if (line == NULL) {
     	return NULL;
   	}
 
@@ -62,17 +62,17 @@ char ** parse(char *line) {
 	 *
   	 * Fill in code.
 	 */
-  	int i = 0;
+  	
 	newArgv = (char**)realloc(newArgv, sizeof(char*)*(count+1));
 	newArgv[count] = '\0';
 
-	/*
+	int i = 0;
 	while (newArgv[i] != '\0')
 	{
-		printf("[%d] : %s\n",i,newArgv[i]);
+		DEBUG("[%d] : %s\n",i,newArgv[i]);
 		i++;
 	}
-	*/
+	
 	
   	return newArgv;
 }
@@ -93,7 +93,9 @@ void free_argv(char **oldArgv) {
 	 */
 	while (oldArgv[i] != '\0')
 	{
+		DEBUG("[%d] : %s ", i, oldArgv[i]);
 		free(oldArgv[i]);
+		DEBUG("free\n", i);
 		i++;
 	}
 

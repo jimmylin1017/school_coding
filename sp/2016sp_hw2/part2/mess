@@ -1,0 +1,8 @@
+[redirect_out.c:64] [0] : wc
+[redirect_out.c:64] [1] : -l
+[redirect_out.c:64] [2] : 123
+[redirect_out.c:64] [3] : mess
+[redirect_out.c:69] end of redirect_out
+  6 123
+  6 mess
+ 12 總計

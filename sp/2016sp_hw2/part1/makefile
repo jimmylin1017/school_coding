@@ -18,6 +18,8 @@ pipe_ls: pipe_ls.o
 %.o:%.c
 	gcc -c $<
 
+cleanall: clean cleanexe
+
 clean:
 	rm *.o
 

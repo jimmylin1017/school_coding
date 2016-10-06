@@ -26,6 +26,7 @@ int pipe_present(char ** myCurrentArgv) {
       i++;
     }
 
+    DEBUG("counter i %d\n", i);
     DEBUG("pipe index %d\n", index);
 
   	if (index == 0 || index == i-1)

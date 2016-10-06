@@ -67,9 +67,14 @@ void run_command(char **myArgv) {
           }
           DEBUG("redirect_out finish\n");
 
+          if(run_in_background == TRUE)
+          {
+              int i = 0;
+              while (myArgv[i] != '\0') i++;
+              if (!strcmp(myArgv[i-1], "&")) myArgv[i-1] = '\0';
+          }
+          
       		pipe_and_exec(myArgv);
       		exit(errno);
-
-          break;
 	}
 }

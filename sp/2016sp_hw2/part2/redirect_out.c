@@ -44,9 +44,27 @@ int redirect_out(char ** myArgv) {
         errno = EBADFD;
         return -1;
       }
-      //close(fd);
+
+      while(1)
+      {
+        if(myArgv[i] != '\0' && myArgv[i+2] != '\0')
+        {
+          myArgv[i] = myArgv[i+1];
+          myArgv[i+1] = myArgv[i+2];
+          i+=2;
+        }
+        else
+          break;
+      }
+
       myArgv[i] = '\0';
-      myArgv[i+1] = '\0';
+
+      i = 0;
+      while (myArgv[i] != '\0')
+      {
+        DEBUG("[%d] : %s\n",i,myArgv[i]);
+        i++;
+      }
   	}
 
     DEBUG("end of redirect_out\n");

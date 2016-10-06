@@ -26,10 +26,12 @@ int main(int argc, char* argv[]) {
 
 			/* Non-builtin command. */
 			} else {
+        DEBUG("run_command\n");
 				run_command(myArgv);
 			}
 
 			/* Free argv array. */
+      DEBUG("call free_argv\n");
 			free_argv(myArgv);
 		}
 

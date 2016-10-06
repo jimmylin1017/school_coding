@@ -20,11 +20,7 @@ int is_background(char ** myArgv) {
     int i = 0;
 	while (myArgv[i] != '\0')
 	{
-		if (!strcmp(myArgv[i], "&"))
-		{
-			myArgv[i] = '\0';
-			return TRUE;
-		}
+		if (!strcmp(myArgv[i], "&")) return TRUE;
 		i++;
 	}
 	return FALSE;

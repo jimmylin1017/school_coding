@@ -43,9 +43,39 @@ int main(int argc, char **argv) {
 		 * in both fields with nulls.
 		 */
 
+		int counter = 1;
+		int len = 0;
+
+		memset(dr.word, '\0', sizeof(dr.word));
+		memset(dr.text, '\0', sizeof(dr.text));
+
+		while(1)
+		{
+			fgets(line, BIGLINE, in);
+			line[strlen(line)-1] = '\0';
+
+			if(line[0] == '\0') break;
+
+			if(counter)
+			{
+				strcpy(dr.word,line);
+				counter = 0;
+			}
+			else
+			{
+				strcpy(dr.text+len,line);
+				len = len + strlen(line);
+				DEBUG("%d\n", len);
+			}
+		}
+		
+		DEBUG("%s\n", dr.text);
+			
+
 		/* Read word and put in record.  Truncate at the end of the "word" field.
 		 *
 		 * Fill in code. */
+
 
 		/* Read definition, line by line, and put in record.
 		 *
@@ -54,6 +84,13 @@ int main(int argc, char **argv) {
 		/* Write record out to file.
 		 *
 		 * Fill in code. */
+		if(dr.word[0] != '\0')
+		{
+			fwrite(dr.word , sizeof(char), sizeof(dr.word), out);
+			fwrite(dr.text , sizeof(char), sizeof(dr.text), out);
+			//fprintf(out, "%s\n%s\n", dr.word, dr.text);
+		}
+			
 	}
 
 	fclose(in);

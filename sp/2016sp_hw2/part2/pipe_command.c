@@ -19,7 +19,8 @@ void pipe_and_exec(char **myArgv) {
 	char **right_argv;
 
     pid_t pid;
-    int i = 0;
+    int i;
+    int status;
   	switch (pipe_argv_index) {
 
     	case -1:	/* Pipe at beginning or at end of argv;  See pipe_present(). */
@@ -29,6 +30,7 @@ void pipe_and_exec(char **myArgv) {
 
     	case 0:	/* No pipe found in argv array or at end of argv array.
 			See pipe_present().  Exec with whole given argv array. */
+          DEBUG("No pipe found in argv\n");
           execvp(myArgv[0], myArgv);
       		break;
 
@@ -38,6 +40,8 @@ void pipe_and_exec(char **myArgv) {
        		 * Terminate first half of vector.
 			 *
        		 * Fill in code. */
+          DEBUG("Pipe in the middle of argv array\n");
+          i = 0;
           left_argv = (char**)malloc(sizeof(char*)*(i+1));
           left_argv[i] = (char*)malloc(sizeof(char)*(strlen(myArgv[i])+1));
           strcpy(left_argv[i],myArgv[i]);
@@ -51,19 +55,8 @@ void pipe_and_exec(char **myArgv) {
             i++;
           }
 
-          i = 0;
-          right_argv = (char**)malloc(sizeof(char*)*(i+1));
-          right_argv[i] = (char*)malloc(sizeof(char)*(strlen(myArgv[i+pipe_argv_index+1])+1));
-          strcpy(right_argv[i],myArgv[i+pipe_argv_index+1]);
-          i++;
-
-          while (myArgv[i+pipe_argv_index+1] != '\0')
-          {
-            right_argv = (char**)realloc(right_argv, sizeof(char*)*(i+1));
-            right_argv[i] = (char*)malloc(sizeof(char)*(strlen(myArgv[i+pipe_argv_index+1])+1));
-            strcpy(right_argv[i],myArgv[i+pipe_argv_index+1]);
-            i++;
-          }
+          left_argv = (char**)realloc(left_argv, sizeof(char*)*(i+1));
+          left_argv[i] = '\0';
 
       		/* Create a pipe to bridge the left and right halves of the vector. 
 			 *
@@ -102,12 +95,23 @@ void pipe_and_exec(char **myArgv) {
 				  	 * - Exec command on right side of pipe and recursively deal with other pipes
 					 *
 					 * Fill in code. */
-            wait(-1);
+            waitpid(-1, &status,0);
+
+            i = 0;
+            while (left_argv[i] != '\0')
+            {
+              DEBUG("left_argv[%d] : %s ", i, left_argv[i]);
+              free(left_argv[i]);
+              DEBUG("free\n", i);
+              i++;
+            }
+
+            free(left_argv);
+
             close(pipefds[1]); // process 2 does not need to write to pipe
             dup2(pipefds[0], STD_INPUT); // instead standard input by pipefds[0]
             close(pipefds[0]); // this file descriptor not needed any more
-            pipe_and_exec(right_argv);
-            break;
+            pipe_and_exec(&myArgv[pipe_argv_index+1]);
 			}
 	}
 	perror("Couldn't fork or exec child process");

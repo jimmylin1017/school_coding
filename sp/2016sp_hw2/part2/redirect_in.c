@@ -46,8 +46,25 @@ int redirect_in(char ** myArgv) {
         return -1;
       }
       //close(fd);
+      while(1)
+      {
+        if(myArgv[i+1] != '\0')
+        {
+          myArgv[i] = myArgv[i+1];
+          i++;
+        }
+        else
+          break;
+      }
+
       myArgv[i] = '\0';
-      myArgv[i+1] = '\0';
+
+      i = 0;
+      while (myArgv[i] != '\0')
+      {
+        DEBUG("[%d] : %s\n",i,myArgv[i]);
+        i++;
+      }
   	}
 
     DEBUG("end of redirect_in\n");
