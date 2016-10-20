@@ -1,7 +1,7 @@
-SRCS = builtin.c parse.c shell.c is_background.c pipe_command.c redirect_in.c redirect_out.c pipe_present.c run_command.c
+SRCS = myls_B033040006.c
 EXT = .c
 OBJS = $(SRCS:$(EXT)=.o)
-EXEC = myshell
+EXEC = myls
 CXX = gcc
 #CXXFLAGS = -Wall -D _DEBUG
 CXXFLAGS = -Wall

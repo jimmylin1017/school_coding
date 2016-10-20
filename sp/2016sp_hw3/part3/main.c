@@ -15,6 +15,8 @@
 #include "dict.h"
 
 int main(int argc, char **argv) {
+	FILE *in;
+	char word[WORD];
 	Dictrec tryit;
 
 	if (argc != 2) {
@@ -22,12 +24,10 @@ int main(int argc, char **argv) {
 		exit(errno);
 	}
 
-	while(1) {
-		printf("What word do you want : ");
-		gets(tryit.word);
+	while(fputs("What word do you want : ",stderr),gets(tryit.word)) {
 		switch(lookup(&tryit,argv[1]) ) {
 			case FOUND:
-				printf("%s : %s\n",tryit.word,tryit.text);
+				printf("%s : %s",tryit.word,tryit.text);
 				break;
 			case NOTFOUND:
 				printf("%s : Not Found!\n",tryit.word) ;

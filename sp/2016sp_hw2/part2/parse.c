@@ -3,9 +3,6 @@
  * Initialise a vector big enough
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "shell.h"
 
 /* Parse a commandline string into an argv array. */
@@ -65,14 +62,14 @@ char ** parse(char *line) {
   	
 	newArgv = (char**)realloc(newArgv, sizeof(char*)*(count+1));
 	newArgv[count] = '\0';
-
+/*
 	int i = 0;
 	while (newArgv[i] != '\0')
 	{
 		DEBUG("[%d] : %s\n",i,newArgv[i]);
 		i++;
 	}
-	
+*/
 	
   	return newArgv;
 }
@@ -95,7 +92,7 @@ void free_argv(char **oldArgv) {
 	{
 		DEBUG("[%d] : %s ", i, oldArgv[i]);
 		free(oldArgv[i]);
-		DEBUG("free\n", i);
+		DEBUG("free [%d]\n", i);
 		i++;
 	}
 

@@ -2,21 +2,16 @@
  * pipe_command.c  :  deal with pipes
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-
 #include "shell.h"
 
 #define STD_OUTPUT 1
 #define STD_INPUT  0
 
 void pipe_and_exec(char **myArgv) {
-  	int pipe_argv_index = pipe_present(myArgv);
-  	int pipefds[2];
-	char **left_argv;
-	char **right_argv;
+    int pipe_argv_index = pipe_present(myArgv);
+    int pipefds[2];
+  char **left_argv;
+  //char **right_argv;
 
     pid_t pid;
     int i;
@@ -31,6 +26,14 @@ void pipe_and_exec(char **myArgv) {
     	case 0:	/* No pipe found in argv array or at end of argv array.
 			See pipe_present().  Exec with whole given argv array. */
           DEBUG("No pipe found in argv\n");
+
+          i = 0;
+          while (myArgv[i] != '\0')
+          {
+            DEBUG("[%d] : %s\n",i,myArgv[i]);
+            i++;
+          }
+          
           execvp(myArgv[0], myArgv);
       		break;
 
@@ -102,7 +105,7 @@ void pipe_and_exec(char **myArgv) {
             {
               DEBUG("left_argv[%d] : %s ", i, left_argv[i]);
               free(left_argv[i]);
-              DEBUG("free\n", i);
+              DEBUG("free [%d]\n", i);
               i++;
             }
 

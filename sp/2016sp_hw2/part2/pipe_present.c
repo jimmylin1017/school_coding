@@ -2,7 +2,6 @@
  *  pipe_present.c :  check for |
  */
 
-#include <stdio.h>
 #include "shell.h"
 
 /*

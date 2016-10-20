@@ -1,7 +1,9 @@
-SRCS = builtin.c parse.c shell.c is_background.c pipe_command.c redirect_in.c redirect_out.c pipe_present.c run_command.c
+# Makefile for progressive dictionary exercise
+
+SRCS = lookup2.c main.c
 EXT = .c
 OBJS = $(SRCS:$(EXT)=.o)
-EXEC = myshell
+EXEC = isam_lookup
 CXX = gcc
 #CXXFLAGS = -Wall -D _DEBUG
 CXXFLAGS = -Wall
@@ -23,4 +25,5 @@ clean:
 
 cleanexe:
 	rm -f $(EXEC)
+
 

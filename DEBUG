@@ -1,4 +1,14 @@
-SRCS = builtin.c parse.c shell.c is_background.c pipe_command.c redirect_in.c redirect_out.c pipe_present.c run_command.c
+#ifdef _DEBUG
+	#define DEBUG(format, args...) printf("[%s:%d] "format, __FILE__, __LINE__, ##args)
+#else
+	#define DEBUG(format, args...)
+#endif
+
+
+
+
+
+SRCS = myls_B033040006.c
 EXT = .c
 OBJS = $(SRCS:$(EXT)=.o)
 EXEC = myshell
@@ -23,4 +33,3 @@ clean:
 
 cleanexe:
 	rm -f $(EXEC)
-

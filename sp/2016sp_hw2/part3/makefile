@@ -6,7 +6,8 @@ OBJS2 = $(SRCS2:$(EXT)=.o)
 EXEC1 = convert
 EXEC2 = file_lookup
 CXX = gcc
-CXXFLAGS = -D _DEBUG
+CXXFLAGS = -Wall
+#CXXFLAGS = -Wall -D _DEBUG
 #CXXFLAGS = -D_XOPEN_SOURCE=500 -std=c99 -Wall -g -D _DEBUG
 #CXXFLAGS = -D_XOPEN_SOURCE=500 -std=c99 -Wall -g
 

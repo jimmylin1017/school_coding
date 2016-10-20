@@ -8,19 +8,15 @@
  * convert into a file of fixed-length records
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-
 #include "dict.h"
+
 #define BIGLINE 512
 
 int main(int argc, char **argv) {
 	FILE *in;
 	FILE *out;        /* defaults */
 	char line[BIGLINE];
-	static Dictrec dr, blank;
+	static Dictrec dr;//, blank;
 	
 	/* If args are supplied, argv[1] is for input, argv[2] for output */
 	if (argc==3) {

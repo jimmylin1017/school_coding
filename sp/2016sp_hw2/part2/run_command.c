@@ -2,11 +2,6 @@
  * run_command.c :    do the fork, exec stuff, call other functions
  */
 
-#include <stdio.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <errno.h>
-#include <sys/wait.h>
 #include "shell.h"
 
 void run_command(char **myArgv) {
@@ -69,11 +64,11 @@ void run_command(char **myArgv) {
 
           if(run_in_background == TRUE)
           {
-              int i = 0;
+              i = 0;
               while (myArgv[i] != '\0') i++;
               if (!strcmp(myArgv[i-1], "&")) myArgv[i-1] = '\0';
           }
-          
+
       		pipe_and_exec(myArgv);
       		exit(errno);
 	}

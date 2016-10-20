@@ -6,13 +6,6 @@
  * 3. definition of is_builtin and do_builtin
 */
 
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pwd.h>
-#include <grp.h>
-#include <sys/utsname.h>
 #include "shell.h"
 
 /****************************************************************************/
@@ -178,4 +171,6 @@ int is_builtin(char *cmd) {
 /* Execute the function corresponding to the builtin cmd found by is_builtin. */
 int do_builtin(char **argv) {
 	this->do_it(argv);
+  
+  return 0;
 }

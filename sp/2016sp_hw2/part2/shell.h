@@ -1,6 +1,17 @@
 /* shell.h : function prototypes for all functions in shell exercise */
 
-
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <pwd.h>
+#include <grp.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 
 #define FALSE 0
