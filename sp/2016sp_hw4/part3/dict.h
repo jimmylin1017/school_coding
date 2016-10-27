@@ -1,8 +1,22 @@
 /*
  * header file for progressive dictionary exercise
  */
+#ifdef _DEBUG
+  #define DEBUG(format, args...) printf("[%s:%d] "format, __FILE__, __LINE__, ##args)
+#else
+  #define DEBUG(format, args...)
+#endif
+
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define WORD 32
 #define TEXT 480

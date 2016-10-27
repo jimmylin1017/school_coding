@@ -12,8 +12,6 @@
  * the first call.
  */
 
-#include <errno.h>
-#include <stdlib.h>
 #include "dict.h"
 
 int main(int argc, char **argv) {

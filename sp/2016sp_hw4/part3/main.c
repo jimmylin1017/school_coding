@@ -12,9 +12,6 @@
  * the first call.
  */
 
-#include <errno.h>
-#include <stdlib.h>
-
 #include "dict.h"
 
 int main(int argc, char **argv) {
@@ -27,7 +24,7 @@ int main(int argc, char **argv) {
 		exit(errno);
 	}
 
-	while(fputs("What word do you want : ",stderr),gets(tryit.word)) {
+	while(fputs("What word do you want : ",stderr), gets(tryit.word)) {
 		switch(lookup(&tryit,argv[1]) ) {
 			case FOUND:
 				printf("%s : %s",tryit.word,tryit.text);

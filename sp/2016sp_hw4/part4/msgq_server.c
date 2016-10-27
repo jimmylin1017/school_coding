@@ -8,13 +8,6 @@
  *               To convert from string to long, use strtol, since
  *               it copes sensibly with numbers like 0xff
  */
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <errno.h>
-#include <sys/types.h>
 
 #include "dict.h"
 
@@ -39,23 +32,36 @@ int main(int argc, char **argv) {
 	/* Get the message queue, key is based on commandline second argument.
 	 *
 	 * Fill in code. */
+	key_t key = strtol(argv[2], NULL, 16);
+
+	qid = msgget(key, IPC_CREAT | IPC_EXCL | 0777);
+	if(qid == -1)
+	{
+		perror("msgget");
+		exit(1);
+	}
+
+	DEBUG("qid : %d\n", qid);
 
 	for (;;) { /* await client messages ; reply immediately */
 
 		/* Wait for / receive a message.
 		 *
 		 * Fill in code. */
+		msgrcv(qid, &rcv, sizeof(rcv.content), 1, 0);
 
-		strcpy(tryit.word,rcv.content.word);/* Get the word to lookup. */
+		strcpy(tryit.word, rcv.content.word);/* Get the word to lookup. */
+
+		DEBUG("%s : %s\n", rcv.content.id, tryit.word);
 
 		snd.type = atol(rcv.content.id);	/* Get sender to set msg type.*/
 
-		switch(lookup(&tryit,argv[1])) {	/* Lookup word in db. */
+		switch(lookup(&tryit, argv[1])) {	/* Lookup word in db. */
 			case FOUND: 
-				strcpy(snd.text,tryit.text);	/* Found.  Put result in return msg. */
+				strcpy(snd.text, tryit.text);	/* Found.  Put result in return msg. */
 				break;
 			case NOTFOUND : 				/* Not found.  Return XXXX. */
-				strcpy(snd.text,"XXXX");
+				strcpy(snd.text, "XXXX");
 				break;
 			case UNAVAIL  : DIE(argv[1]);	/* Other problem. */
 		}
@@ -63,5 +69,8 @@ int main(int argc, char **argv) {
 		/* Send response.
 		 *
 		 * Fill in code. */
+		msgsnd(qid, &snd, sizeof(snd.text), 0);
 	}
+
+	//msgctl(qid, IPC_RMID, (struct msqid_ds *)NULL);
 }
