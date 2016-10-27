@@ -8,12 +8,15 @@
 
 /* Storage for baseline times. */
 static clock_t start_time;
+struct tms start_tmbuf;
 
 /* Save a baseline of user and system CPU times, plus wallclock time. */
 void set_timer(void) {
 	struct tms tmbuf;
 	/* Fill in code. */
 	start_time = times(&tmbuf);
+
+	start_tmbuf = tmbuf;
 }
 
 
@@ -29,6 +32,7 @@ void stop_timer(void) {
 	 *
 	 * Fill in code. */
 	end_time = times(&tmbuf);
-	printf("real:%.3f user:%.3f system:%.3f\n", (end_time - start_time) / ticks, tmbuf.tms_cutime / ticks, tmbuf.tms_cstime / ticks);
+	printf("User:%.2f\tSys:%.2f\tReal: %.2f\n", 
+		(tmbuf.tms_cutime - start_tmbuf.tms_cutime) / ticks, (tmbuf.tms_cstime - start_tmbuf.tms_cstime) / ticks, (end_time - start_time) / ticks);
 }
 

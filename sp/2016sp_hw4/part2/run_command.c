@@ -32,6 +32,8 @@ void run_command(char **myArgv) {
 
     DEBUG("is_background %d\n", run_in_background);
 
+    set_timer();
+
   	switch(pid = fork()) {
 
     	/* Error. */
@@ -44,6 +46,8 @@ void run_command(char **myArgv) {
 
       		if (!run_in_background) {
         		waitpid(pid,&stat,0);	/* Wait for child to terminate. */
+
+            stop_timer();
 
         		if (WIFEXITED(stat) && WEXITSTATUS(stat)) {
           			fprintf(stderr, "Child %d exited with error status %d: %s\n",

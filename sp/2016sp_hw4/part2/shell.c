@@ -18,7 +18,6 @@ int main(int argc, char* argv[]) {
 	fputs("myshell -> ",stdout);
 	while (fgets(line,LONGLINE,stdin)) {
    
-    set_timer();
   	/* Create argv array based on commandline. */
   	if ((myArgv = parse(line))!= NULL) {
 
@@ -38,7 +37,6 @@ int main(int argc, char* argv[]) {
         DEBUG("call free_argv\n");
     		free_argv(myArgv);
     }
-    stop_timer();
 
     fputs("myshell -> ",stdout);
 	}
