@@ -1,0 +1,7 @@
+
+assemble:
+„Y arm-none-eabi-gcc.exe -T generic-hosted.ld a.s
+
+
+run:
+„Yarm-none-eabi-run.exe a.out
