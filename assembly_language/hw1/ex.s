@@ -1,3 +1,8 @@
+@ Hello, arm-gcc
+@ Hello, CodeSourcery:0x66778899
+@ Hello, CodeSourcery:0x44331122
+@ Hello, CodeSourcery:0x34333231
+
 @this is comment
 
 @the information that tells arm-none-eabi-as what arch. to assemble to 
@@ -6,6 +11,7 @@
 
 @this is code section
 @note, we must have the main function for the simulator's linker script
+
 	.text
 	.align	2   @align 4 byte
 	.global	main
@@ -19,6 +25,12 @@ main:
 	ldr	r0, =string1
 	bl printf
 	
+	ldr	r0, =string0
+	ldr r1, Label1
+	bl printf
+	ldr	r0, =string0
+	ldr r1, Label1 + 4
+	bl printf
 	ldr	r0, =string0
 	ldr r1, Label1 + 8
 	bl printf
@@ -41,10 +53,11 @@ fun:
 @data section
 
 Label1:
-    .word   0x77777777
-    .short  0x1122
+    .word   0x66778899	@0x66778899
+    .short  0x1122	@0x44331122
+	.short  0x4433
     .align 2
-    .byte   0x31, 0x32, 0x33, 0x34
+    .byte   0x31, 0x32, 0x33, 0x34	@0x34333231
 
 string0:
 	.ascii	"Hello, CodeSourcery:0x%X\n\0"
