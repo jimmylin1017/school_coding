@@ -4,20 +4,18 @@ EXT = .c
 OBJS1 = $(SRCS1:$(EXT)=.o)
 OBJS2 = $(SRCS2:$(EXT)=.o)
 EXEC1 = consumer
-EXEC2 = producer.c
-CXX = gcc
-CXXFLAGS = -Wall -D _DEBUG
-#CXXFLAGS = -Wall
-#CXXFLAGS = -D_XOPEN_SOURCE=500 -std=c99 -Wall -g -D _DEBUG
-#CXXFLAGS = -D_XOPEN_SOURCE=500 -std=c99 -Wall -g
+EXEC2 = producer
+CXX = gcc -std=c99 -D_XOPEN_SOURCE=500
+#CXXFLAGS = -Wall -D _DEBUG
+CXXFLAGS = -Wall
 
 all: $(EXEC1) $(EXEC2)
 
 $(EXEC1): $(OBJS1)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS1)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS1) 
 
 $(EXEC2): $(OBJS2)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS2)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS2) 
 
 %.o:%$(EXT)
 	$(CXX) $(CXXFLAGS) -c $< -ggdb

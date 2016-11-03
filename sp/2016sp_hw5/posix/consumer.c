@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 		DIE("mmap");
 	}
 
-	DEBUG("producer start read\n");
+	DEBUG("consumer start read\n");
 
 	tmp.id = 0;
 	while(tmp.id < MAX-1)
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		if(!checknum[i]) lostnum++;
 	}
 
-	DEBUG("producer read finish\n");
+	DEBUG("consumer read finish\n");
 
 	printf("Lost: %d datas\n", lostnum);
 

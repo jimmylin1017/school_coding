@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
 	sleep(15); // sleep 15 sec
 
-	DEBUG("consumer start write\n");
+	DEBUG("producer start write\n");
 
 	for(int i = 0; i < MAX; i++)
 	{
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 		memcpy(shm + (i % shmblocks), &tmp, sizeof(packet));
 	}
 
-	DEBUG("consumer write finish\n");
+	DEBUG("producer write finish\n");
 
 	if(munmap(shm, shmblocks * sizeof(packet)) == -1)
 	{
