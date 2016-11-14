@@ -16,56 +16,75 @@ main:
 	
 	@code body
 	@arithm intA intB intp
-	ldr r5,[r1,#4]!
-	ldr r6,[r1,#4]!
-	ldr r7,[r1,#4]!
+	ldr r5,[r1,#4]
+	ldr r6,[r1,#8]
+	ldr r7,[r1,#12]
 	
-	mov r1, #0
-	mov r2, #0
-	mov r10, #10
+	@ldrb r0,[r7]
+	@bl putchar
 	
-	ldrb r8,[r5],#1
-	ldrb r9,[r6],#1
-		
+	mov r11, #0
+	mov r10, #10		
 GETA:
-	cmp r8,#0
-	beq GETB
-	sub r8, r8, #48
-	mul r11, r1, r10
-	add r1, r11, r8
 	ldrb r8,[r5],#1
-	b GETA
-
+	cmp r8,#0
+	@beq GETB
+	subne r8, r8, #48
+	mulne r11, r10, r11
+	addne r11, r11, r8
+	bne GETA
+	
+	@mov r1, r11
+	@ldr r0, =ADD0_S
+	@bl printf
+	@b EXIT
+	
+	mov r10, #10
+	mov r12, #0
 GETB:
-	cmp r9,#0
-	beq GETFIN
-	sub r9, r9, #48
-	mul r12, r2, r10
-	add r2, r12, r9
 	ldrb r9,[r6],#1
-	b GETB
+	cmp r9,#0
+	@ble GETFIN
+	subne r9, r9, #48
+	mulne r12, r10, r12
+	addne r12, r12, r9
+	bne GETB
+	
+	ldrb r0,[r7]
+	bl putchar
+	
+	@b ADD0
+	
+	mov r1, r11
+	mov r2, r12
+	ldr r0, =ADD0_S
+	bl printf
+	@b EXIT
 	
 GETFIN:
-	adr r0, JUMPTABLE
-	ldrb r4,[r7]
-	sub r4,r4,#48
-	cmp r4,#8
-	ldrle pc, [r0, r4, lsl #2]
+	adr r4, JUMPTABLE
+	ldrb r0,[r7]
+	bl putchar
+	sub r0, r0, #48
+	cmp r0, #8
+	ldr pc, [r4, r0, lsl #2]
 	
 	b EXIT
 	
 JUMPTABLE:
-	B ADD0
-	B SUB1
-	B BITREV2
-	B DIV3
-	B MAX4
-	B EXP5
-	B GCD6
-	B LONGMUX7
-	B LCM8
+	b ADD0
+	b SUB1
+	b BITREV2
+	b DIV3
+	b MAX4
+	b EXP5
+	b GCD6
+	b LONGMUX7
+	b LCM8
 	
 ADD0:
+	mov r1, r11
+	mov r2, r12
 	add r3,r1,r2
 	ldr r0,=ADD0_S
 	bl printf
