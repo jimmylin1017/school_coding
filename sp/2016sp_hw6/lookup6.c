@@ -11,20 +11,14 @@
  * for shared memory & semaphores.
  */
 
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <stdlib.h>
-#include <string.h
-
 #include "dict.h"
 
 int lookup(Dictrec * sought, const char * resource) {
 	static int shmid,semid;
 	long key = strtol(resource,(char **)NULL,0);
 	static Dictrec * shm;
-	struct sembuf grab    = {0,-1,SEM_UNDO};   /* mutex other clients  */
-	struct sembuf release = {0,1,SEM_UNDO};    /* release mtx to other clients */
+	struct sembuf grab    = {0,-1,SEM_UNDO};   /* mutex other clients, -1 get */
+	struct sembuf release = {0,1,SEM_UNDO};    /* release mtx to other clients, 1 release */
 	struct sembuf alert   = {1,2,SEM_UNDO};    /* wake up server       */
 	struct sembuf await   = {1,0,0};           /* wait for server      */
 	static int first_time = 1;
@@ -34,27 +28,63 @@ int lookup(Dictrec * sought, const char * resource) {
 
 		/* Connect to shared memory.
 		 * Fill in code. */
+		shmid = shmget((key_t)key, sizeof(Dictrec), 0666 | IPC_CREAT);
+
+		if(shmid == -1)
+		{
+			DIE("shmget");
+		}
 
 		/* Get shared memory virtual address.
 		 * Fill in code. */
+		shm = (Dictrec *)shmat(shmid, (void *)0, 0); // (void *)0 same as NULL
+
+		if(shm == -1)
+		{
+			DIE("shmat");
+		}
 
 		/* Get semaphore.
 		 * Fill in code. */
+
+		// 0's val = 1, 1's val = 0
+		semid = semget(key, 2, 0666 | IPC_CREAT);
+
+		if(semid == -1)
+		{
+			DIE("semget");
+		}
 	}
 
 	/* Reserve semaphore so other clients will wait.
 	 * Fill in code. */
+	if(semop(semid, &grab, 1) == -1)
+	{
+		DIE("semop grab");
+	}
 
 	strcpy(shm->word,sought->word);
 
 	/* Alert server.  Bump semaphore 1 up by 2.
 	 * Fill in code. */
+	if(semop(semid, &alert, 1) == -1)
+	{
+		DIE("semop alert");
+	}
 
 	/* Wait for server to finish.  Server will have set sem 1 to zero.
 	 * Fill in code. */
+	if(semop(semid, &await, 1) == -1)
+	{
+		DIE("semop await");
+	}
 
 	/* Done using the server.  Release to other clients.
 	 * Fill in code. */
+	if(semop(semid, &release, 1) == -1)
+	{
+		DIE("semop release");
+	}
 
 	if (strcmp(shm->text,"XXXX") != 0) {
 		strcpy(sought->text,shm->text);

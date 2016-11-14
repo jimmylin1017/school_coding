@@ -8,23 +8,12 @@
  *              argv[2] is the key for semaphores + shared mem
  */
 
-#include <sys/stat.h>
-#include <sys/errno.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "dict.h"
 
 int main(int argc, char **argv) {
 	int shmid,semid;
 	long key;
-	int fd ;
+	//int fd ;
 	Dictrec * shm;
 	struct stat stbuff;
 	extern int errno;
@@ -57,16 +46,38 @@ int main(int argc, char **argv) {
 	 * and the text of the result will be returned as the answer.
 	 *
 	 * Fill in code. */
+	shmid = shmget((key_t)key, sizeof(Dictrec), 0666 | IPC_CREAT);
+
+	if(shmid == -1)
+	{
+		DIE("shmget");
+	}
 
 	/* Allocate a group of two semaphores.  Use same key as for shmem.
 	 * Fill in code. */
+	semid = semget(key, 2, 0666 | IPC_CREAT);
+
+	if(semid == -1)
+	{
+		DIE("semget");
+	}
 
 	/* Get shared memory virtual address.
 	 * Fill in code. */
+	shm = (Dictrec *)shmat(shmid, (void *)0, 0); // (void *)0 same as NULL
+
+	if(shm == (void *)-1)
+	{
+		DIE("shmat");
+	}
 
 	/* Set up semaphore group. */
-	setit.array = vals;
 	/* Fill in code. */
+	setit.array = vals;  // 0's val = 1, 1's val = 0
+	if(semctl(semid, 0, SETALL, setit) == -1) // SETALL: The argument semnum is ignored.
+	{
+		DIE("semctl");
+	}
 
 	/* Main working loop */
 	for (;;) {
@@ -77,8 +88,14 @@ int main(int argc, char **argv) {
 		 *
 		 * Fill in code. */
 
+		// in the begin 1's val = 0
+		if(semop(semid, &wait, 1) == -1)
+		{
+			DIE("semop1");
+		}
+
 		/* Do the lookup here.  Write result directly into shared memory. */
-		switch(lookup(shm,argv[1]) ) {
+		switch(lookup(shm, argv[1])) {
 			case FOUND: 
 				break;
 			case NOTFOUND: 
@@ -91,6 +108,10 @@ int main(int argc, char **argv) {
 		/* Decrement again so that we will block at the top of the for loop again until a client wakes us up again.
 		 *
 		 * Fill in code. */
+		if(semop(semid, &wait, 1) == -1)
+		{
+			DIE("semop2");
+		}
 
 	} /* end for */
 }
