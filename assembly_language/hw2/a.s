@@ -5,9 +5,9 @@
 	
 main:
 	stmfd sp!, {fp,lr}
-	ldr r4,[r1,#4]
-	ldr r5,[r1,#8]
-	ldr r6,[r1,#12]
+	ldr r4,[r1,#8]
+	ldr r5,[r1,#12]
+	ldr r6,[r1,#16]
 	stmfd sp!, {r4-r6}
 	
 	@ r4-r8 can use
@@ -39,6 +39,8 @@ GETFIN:
 	cmp r0, #8
 	ldrle pc, [r1, r0, lsl #2]
 	
+	ldr r0, =ERROR_S
+	bl printf
 	b EXIT
 	
 JUMPTABLE:
@@ -135,12 +137,16 @@ GCD6:
 LONGMUX7:
 	mov r1, r7
 	mov r2, r8
-	mov r4, r2
-LONGMUX7LOOP:
-	cmp r4, #0
-LONGMUX7FIN:
-	ldr r0,=GCD6_S
-	bl printf
+	umull r4, r3, r1, r2
+	cmp r3, #0
+	ldrne r0,=LONGMUX7_S_1
+	blne printf
+	movne r1, r4
+	ldrne r0,=LONGMUX7_S_2
+	blne printf
+	moveq r3, r4
+	ldreq r0,=LONGMUX7_S
+	bleq printf
 	b EXIT
 
 LCM8:
@@ -219,17 +225,20 @@ EXP5_S:
 GCD6_S:
 	.asciz	"Function 6: greatest common divisor of %d and %d is %d.\n"
 	.align
+LONGMUX7_S:
+	.asciz	"Function 7: Long-multiplication of %u and %u is %u\n"
+	.align
 LONGMUX7_S_1:
-	.asciz	"Function 7: Long-multiplication of %d and %d is %d"
+	.asciz	"Function 7: Long-multiplication of %u and %u is %u"
 	.align
 LONGMUX7_S_2:
-	.asciz	"%d.\n"
+	.asciz	"%u.\n"
 	.align
 LCM8_S:
 	.asciz	"Function 8: least common multiply of %d and %d is %d.\n"
 	.align
-WRONG_OPER_S:
-	.asciz	"the oper must be 0~9\n"
+ERROR_S:
+	.asciz	"the operation must be 0~9\n"
 	.align
 EXIT:
 	ldmfd sp!, {r4-r6}

@@ -1,0 +1,1 @@
+arm-none-eabi-run a.out arithm 15 12 0
