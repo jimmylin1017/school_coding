@@ -5,41 +5,41 @@
 	
 main:
 	stmfd sp!, {fp,lr}
-	ldr r4,[r1,#8]
-	ldr r5,[r1,#12]
-	ldr r6,[r1,#16]
-	stmfd sp!, {r4-r6}
+	ldr v1,[a2,#8] @arithm
+	ldr v2,[a2,#12] @intA
+	ldr v3,[a2,#16] @intB
+	stmfd sp!, {v1-v3}
 	
-	@ r4-r8 can use
-	mov r7, #0	@intA
-	mov r8, #0	@intB
-	mov r10, #10
+	@ v1-v5 can use
+	mov v4, #0 @store intA
+	mov v5, #0 @store intB
+	mov v7, #10
 	
 GETA:
-	ldrb r0,[r4],#1
-	cmp r0,#0
-	subne r0, r0, #48
-	mulne r7, r10, r7
-	addne r7, r7, r0
+	ldrb a1,[v1],#1
+	cmp a1,#0
+	subne a1, a1, #48
+	mulne v4, v7, v4
+	addne v4, v4, a1
 	bne GETA
 	
-	mov r10, #10
+	mov v7, #10
 GETB:
-	ldrb r0,[r5],#1
-	cmp r0,#0
-	subne r0, r0, #48
-	mulne r8, r10, r8
-	addne r8, r8, r0
+	ldrb a1,[v2],#1
+	cmp a1,#0
+	subne a1, a1, #48
+	mulne v5, v7, v5
+	addne v5, v5, a1
 	bne GETB
 
 GETFIN:
-	adr r1, JUMPTABLE
-	ldrb r0,[r6]
-	sub r0, r0, #48
-	cmp r0, #8
-	ldrle pc, [r1, r0, lsl #2]
+	adr a2, JUMPTABLE
+	ldrb a1,[v3]
+	sub a1, a1, #48
+	cmp a1, #8
+	ldrle pc, [a2, a1, lsl #2]
 	
-	ldr r0, =ERROR_S
+	ldr a1, =ERROR_S
 	bl printf
 	b EXIT
 	
@@ -55,152 +55,145 @@ JUMPTABLE:
 	.word LCM8
 
 ADD0:
-	mov r1, r7
-	mov r2, r8
-	add r3,r1,r2
-	ldr r0,=ADD0_S
+	mov a2, v4
+	mov a3, v5
+	add a4,a2,a3
+	ldr a1,=ADD0_S
 	bl printf
 	b EXIT
 
 SUB1:
-	mov r1, r7
-	mov r2, r8
-	sub r3,r1,r2
-	ldr r0,=SUB1_S
+	mov a2,v4
+	mov a3,v5
+	sub a4,a2,a3
+	ldr a1,=SUB1_S
 	bl printf
 	b EXIT
 
 BITREV2:
-	mov r1, r7
-	mov r2, r8
-	mov r3, #0
-	mov r4, #31
+	mov a2,v4
+	mov a3,v5
+	mov a4,#0
+	mov v1,#31 @counter: shift 31 times
 BITREV2LOOP:
-	mov r0, r7, lsl r4
-	mov r3, r3, lsl #1
-	add r3, r3, r0, lsr #31
-	sub r4, r4, #1
-	cmp r4, #0
+	mov a1,a2,lsl v1 @a1 = a2 left shift v1 to get 
+	mov a4,a4,lsl #1 @shift a4 bit left 1
+	add a4,a4,a1,lsr #31 @shift right to get first bit add to a4
+	sub v1,v1,#1
+	cmp v1,#0
 	bge BITREV2LOOP
-	ldr r0,=BITREV2_S
+	ldr a1,=BITREV2_S
 	bl printf
 	b EXIT
 
 DIV3:
-	mov r1, r7
-	mov r2, r8
-	mov r3, #0
-	mov r4, r1
+	mov a2,v4
+	mov a3,v5
+	mov a4,#0
+	mov v1,a2
 IV3LOOP:
-	sub r4, r4, r2
-	cmp r4 ,#0
-	addge r3, r3, #1
+	sub v1,v1,a3
+	cmp v1,#0
+	addge a4,a4,#1
 	bge IV3LOOP
-	ldr r0,=DIV3_S
+	ldr a1,=DIV3_S
 	bl printf
 	b EXIT
 
 MAX4:
-	mov r1, r7
-	mov r2, r8
-	cmp r1, r2
-	movge r3, r1
-	movlt r3, r2
-	ldr r0,=MAX4_S
+	mov a2,v4
+	mov a3,v5
+	cmp a2,a3
+	movge a4,a2 @a2 >= a3, a4 = a2
+	movlt a4,a3 @a2 < a3, a4 = a3
+	ldr a1,=MAX4_S
 	bl printf
 	b EXIT
 
 EXP5:
-	mov r1, r7
-	mov r2, r8
-	mov r3, #1
-	mov r4, r2
+	mov a2,v4
+	mov a3,v5
+	mov a4,#1
+	mov v1,a3 @v1 is counter fot multiple
 EXP5LOOP:
-	cmp r4, #0
-	mulgt r3, r1, r3
-	subgt r4, #1
+	cmp v1,#0
+	mulgt a4,a2,a4 @v1 > 0 then a4 = a2 * a4
+	subgt v1,#1
 	bgt EXP5LOOP
-	ldr r0,=EXP5_S
+	ldr a1,=EXP5_S
 	bl printf
 	b EXIT
 	
 GCD6:
-	bl GCD
-	@ldmfd sp!,{r3}
-	mov r3, r6
-	mov r1, r7
-	mov r2, r8
-	ldr r0,=GCD6_S
+	bl GCD @return value is v3 and arguement is v4, v5
+	mov a4,v3 @store return value in a4
+	mov a2,v4
+	mov a3,v5
+	ldr a1,=GCD6_S
 	bl printf
 	b EXIT
 	
 LONGMUX7:
-	mov r1, r7
-	mov r2, r8
-	umull r4, r3, r1, r2
-	cmp r3, #0
-	ldrne r0,=LONGMUX7_S_1
-	blne printf
-	movne r1, r4
-	ldrne r0,=LONGMUX7_S_2
-	blne printf
-	moveq r3, r4
-	ldreq r0,=LONGMUX7_S
-	bleq printf
-	b EXIT
-
-LCM8:
-	bl GCD
-	@ldmfd sp!,{r3}
-	mov r3, r6
-	mov r1, r7
-	mov r2, r8
-	mov r4, r1
-	mov r5, r2
-	mov r6, #0
-	mov r7, #0
-LCM8LOOP1:
-	cmp r4, #0
-	beq LCM8LOOP2
-	sub r4, r4, r3
-	add r6, r6, #1
-	b LCM8LOOP1
-LCM8LOOP2:
-	cmp r5, #0
-	beq LCM8FIN
-	sub r5, r5, r3
-	add r7, r7, #1
-	b LCM8LOOP2
-LCM8FIN:
-	mul r3, r6, r3
-	mul r3, r7, r3
-	ldr r0,=LCM8_S
+	mov a2, v4
+	mov a3, v5
+	ldr a1,=LONGMUX7_S_1
+	bl printf
+	umull a2, a3, v4, v5 @a2,a3 = v4 * v5 undigned
+	ldr a1,=LONGMUX7_S_2
 	bl printf
 	b EXIT
 
-@ find gcd with r7 and r8, return with r3 push in stack
+LCM8:
+	bl GCD @return value is v3 and arguement is v4, v5
+	mov a4, v3 @store return value in a4
+	mov a2, v4
+	mov a3, v5
+	mov v1, a2 @for minus to get p (a2 = a4 * p)
+	mov v2, a3 @for minus to get q (a3 = a4 * q)
+	mov v3, #0 @value p (a2 = a4 * p)
+	mov v4, #0 @value q (a3 = a4 * q)
+LCM8LOOP1:
+	cmp v1, #0
+	beq LCM8LOOP2
+	sub v1, v1, a4
+	add v3, v3, #1
+	b LCM8LOOP1
+LCM8LOOP2:
+	cmp v2, #0
+	beq LCM8FIN
+	sub v2, v2, a4
+	add v4, v4, #1
+	b LCM8LOOP2
+LCM8FIN:
+	mul a4, v3, a4 @a4 = p * q * a4 to get LCM
+	mul a4, v4, a4
+	ldr a1,=LCM8_S
+	bl printf
+	b EXIT
+
+@ find gcd with v4 and v5, return with a4 push in stack
 GCD:
-	mov r1, r7
-	mov r2, r8
-	mov r4, r1
-	mov r5, r2
-	cmp r4, r5
-	movlt r6, r4
-	movlt r4, r5
-	movlt r5, r6
-	mov r3, r5
+	mov a2, v4
+	mov a3, v5
+	mov v1, a2
+	mov v2, a3
+	cmp v1, v2
+	movlt v3, v1
+	movlt v1, v2
+	movlt v2, v3
+	mov a4, v2
 GCDLOOP:
-	cmp r5, #0
-	movne r3, r5
+	cmp v2, #0
+	movne a4, v2
 	beq GCDFIN
-	sub r4, r4, r5
-	cmp r4, r5
-	movlt r6, r4
-	movlt r4, r5
-	movlt r5, r6
+	sub v1, v1, v2
+	cmp v1, v2
+	movlt v3, v1
+	movlt v1, v2
+	movlt v2, v3
 	b GCDLOOP
 GCDFIN:
-	mov r6, r4
+	mov v3, v1
 	bx lr
 	
 	
@@ -225,14 +218,11 @@ EXP5_S:
 GCD6_S:
 	.asciz	"Function 6: greatest common divisor of %d and %d is %d.\n"
 	.align
-LONGMUX7_S:
-	.asciz	"Function 7: Long-multiplication of %u and %u is %u\n"
-	.align
 LONGMUX7_S_1:
-	.asciz	"Function 7: Long-multiplication of %u and %u is %u"
+	.asciz	"Function 7: Long-multiplication of %d and %d is "
 	.align
 LONGMUX7_S_2:
-	.asciz	"%u.\n"
+	.asciz	"%lld.\n"
 	.align
 LCM8_S:
 	.asciz	"Function 8: least common multiply of %d and %d is %d.\n"
@@ -241,6 +231,6 @@ ERROR_S:
 	.asciz	"the operation must be 0~9\n"
 	.align
 EXIT:
-	ldmfd sp!, {r4-r6}
+	ldmfd sp!, {v1-v3}
 	ldmfd sp!,{fp,lr}
 	bx lr
