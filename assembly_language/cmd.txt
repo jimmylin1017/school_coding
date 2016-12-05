@@ -1,7 +1,11 @@
-
 assemble:
-„Y arm-none-eabi-gcc.exe -T generic-hosted.ld a.s
 
+arm-none-eabi-gcc.exe -T generic-hosted.ld a.s
+
+objdump:
+
+arm-none-eabi-objdump.exe -D a.out
 
 run:
-„Yarm-none-eabi-run.exe a.out
+
+arm-none-eabi-run.exe a.out
