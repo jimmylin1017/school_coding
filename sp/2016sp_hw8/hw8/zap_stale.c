@@ -13,7 +13,7 @@ void zap_stale(void) {	/* call disconnect when needed */
 	Servlet *slt = NULL;
 
 	int stale = 0;
-	char *stale_msg = "sorry time's up\n";
+	char *stale_msg = "Sorry - time is up\n";
 
 	printf("How many seconds counts as stale ? ");
 	scanf("%d%*c", &stale );

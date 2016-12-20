@@ -6,10 +6,11 @@
 
 void list_stats(void) { /* Summmarise statistics */
 	
-	State *cur_state = NULL;
+	Stats *cur_state = NULL;
 
-	double connect_time, total_connect, aborted, size;
-	cur_connect = total_connect = aborted = size = 0;
+	double connect_time, aborted, size;
+	int total_connect;
+	connect_time = total_connect = aborted = size = 0;
 
 	pthread_mutex_lock(&history_lock);
 
@@ -30,9 +31,9 @@ void list_stats(void) { /* Summmarise statistics */
 	if(total_connect > 0)
 	{
 		printf("%d connections\n", total_connect);
-	    printf("%.1lf%% aborted\n", (aborted / total_connect) * 100);
-	    printf("average connect = %.1lf seconds\n", connect_time / total_connect);
-	    printf("average size = %.1lf bytes\n", size / total_connect);
+	    printf("%.2lf aborted\n", aborted / total_connect);
+	    printf("average connect = %.2lf seconds\n", connect_time / total_connect);
+	    printf("average size = %.2lf bytes\n", size / total_connect);
 	}
 	else
 		printf("No connections on record\n");

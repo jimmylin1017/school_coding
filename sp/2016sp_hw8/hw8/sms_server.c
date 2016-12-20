@@ -19,7 +19,7 @@ pthread_mutex_t door_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t pending_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t history_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	
 	pthread_t listen_thread;
 	pthread_t garbage_thread;
@@ -39,7 +39,7 @@ void main(int argc, char **argv) {
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 	pthread_create(&listen_thread, &attr, &listen_port, NULL);
-	pthread_create(&listen_thread, &attr, &garbage_thread, NULL);
+	pthread_create(&garbage_thread, &attr, &collect_garb, NULL);
 
 	// c) Run the menu
 	menu(server_menu);

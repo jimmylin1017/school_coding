@@ -6,8 +6,8 @@
 
 void zero_stats(void) { /* re-start statistics */
 	
-	State *cur_state = NULL;
-	State *temp = NULL;
+	Stats *cur_state = NULL;
+	Stats *temp = NULL;
 
 	pthread_mutex_lock(&history_lock);
 
@@ -19,7 +19,7 @@ void zero_stats(void) { /* re-start statistics */
 		free(temp);
 	}
 
-	history = NULL
+	history = NULL;
 
 	pthread_mutex_unlock(&history_lock);
 }

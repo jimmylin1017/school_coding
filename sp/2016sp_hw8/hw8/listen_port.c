@@ -21,7 +21,7 @@ void *listen_port(void *info) { /* body of port listener */
 	int server_fd, client_fd;
 	int client_size = sizeof(client);
 
-	if(sd = socket(AF_INET, SOCK_STREAM, 0) == -1)
+	if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 	{
 		DIE("socket");
 	}
@@ -29,20 +29,22 @@ void *listen_port(void *info) { /* body of port listener */
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT); //convert values between host and network byte order
 	server.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY 0.0.0.0 can be any address when have many MAC
+	int optval = TRUE;
+	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, (socklen_t)client_size);
 
-	if(bind(sd, (struct sockaddr*)&server, sizeof(server)) == -1)
+	if(bind(server_fd, (struct sockaddr*)&server, sizeof(server)) == -1)
 	{
 		DIE("bind");
 	}
 
-	if (listen(sd, 128) == -1)
+	if (listen(server_fd, 128) == -1)
 	{
 		DIE("listen");
 	}
 
 	while ( TRUE )
 	{
-		if((cd = accept(sd, &client, &client_size)) == -1)
+		if((client_fd = accept(server_fd, (struct sockaddr*)&client, &client_size)) == -1)
 		{
 			DIE("accept");
 		}
