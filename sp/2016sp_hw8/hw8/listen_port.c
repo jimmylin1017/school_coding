@@ -29,8 +29,8 @@ void *listen_port(void *info) { /* body of port listener */
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT); //convert values between host and network byte order
 	server.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY 0.0.0.0 can be any address when have many MAC
-	int optval = TRUE;
-	setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, (socklen_t)client_size);
+	//int optval = TRUE;
+	//setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, (socklen_t)client_size);
 
 	if(bind(server_fd, (struct sockaddr*)&server, sizeof(server)) == -1)
 	{
