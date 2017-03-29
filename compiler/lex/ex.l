@@ -2,38 +2,57 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define MAX_BUFFER 256
 
 int position;
 int line;
 int tail;
-char *hash_table[MAX_BUFFER];
+char* hash_table[MAX_BUFFER];
+
 void creat();
-int lookup(char*);
-int insert(char*);
+int lookup(char* id);
+int insert(char* id);
 void dump();
-char* cut(char*, int);
+char* format_str(char* s, int len);
 
 %}
 
-num 	[0-9]
-ch	[a-zA-Z_$]
-numch	[a-zA-Z_0-9_$]
-first	[a-zA-Z_$]
+num [0-9]
+ch [a-zA-Z_$]
+id [a-zA-Z_$]+[a-zA-Z_0-9_$]*
+xid [0-9]+[a-zA-Z_0-9_$]*
 symbol ","|":"|";"|"("|")"|"["|"]"|"{"|"}"
-operator "+"|"-"|"*"|"/"|"%"|"="|"<"|">"|"!"|"++"|"--"|">="|"<="|"=="|"!="|"&&"|"||"
-pstr	["]([^"\n]|"\"\""|"\\\"")*["]
-wrong 	["][^\n]*["]
+operator "++"|"--"|"<="|">="|"=="|"!="|"+"|"-"|"*"|"/"|"%"|"="|"<"|">"|"&&"|"||"|"!"
+str \"(\\.|[^\\"])*\"
+xstr ["][^\n]*["]
 comment [/][*]([^*]|[*]*[^*/])*[*]+[/]
-
+eol \r\n|\n
 %%
 
-do |
-if |
-for |
-int |
-new |
-try |
+implements |
+protected |
+continue |
+boolean |
+default |
+extends |
+finally |
+private |
+double |
+public |
+return |
+static |
+string |
+switch |
+break |
+catch |
+class |
+const |
+false |
+final |
+float |
+short |
+while |
 byte |
 case |
 char |
@@ -42,139 +61,168 @@ long |
 this |
 true |
 void |
-break |
-catch |
-class |
-false |
-final |
-float |
-short |
-while |
-double |
-public |
-return |
-static |
-string |
-switch |
-boolean |
-default |
-extends |
-finally |
-private |
-continue |
-protected |
-implements		{ printf("Line: %d,1st char: %d, \"%s\" is a \"reserved word\".\n",line,position,yytext); 
-			  position+=yyleng; }	
+for |
+int |
+new |
+try |
+do |
+if	{
+		printf("Line: %d,1st char: %d, \"%s\" is a \"reserved word\".\n", line, position, yytext); 
+		position += yyleng;
+	}	
+
 "//".* |
-{comment}		{ printf("Line: %d,1st char: %d, \"%s\" is a \"comment\".\n",line,position,yytext); 
-			  position+=yyleng; }
+{comment}	{
+				printf("Line: %d,1st char: %d, \"%s\" is a \"comment\".\n", line, position, yytext); 
+				position += yyleng;
+			}
 
-{pstr}			{ printf("Line: %d,1st char: %d, %s is a \"string\".\n",line,position,cut(yytext,yyleng));
-			  position+=yyleng; }
+{str}	{
+			printf("Line: %d,1st char: %d, %s is a \"string\".\n", line, position, format_str(yytext,yyleng));
+			printf("      Original: %s\n", yytext);
+	  		position += yyleng;
+		}
 
-{wrong}			{ printf("Line: %d,1st char: %d, %s is an error \"string\".\n",line,position,yytext);
-			  printf("      ERROR on %s : You may have \' \" \' in your string.\n",yytext);
-			  position+=yyleng; }
+{xstr}	{
+			printf("Line: %d,1st char: %d, %s is an error \"string\".\n", line, position, yytext);
+			position += yyleng;
+		}
 
-\n			{ line++; position=1;}
+{eol}	{
+			/* End of Line */
+			line++;
+			position = 1;
+		}
 
-[-]?{num}+		{ printf("Line: %d,1st char: %d, \"%s\" is an \"Interger\".\n",line,position,yytext); 
-			  position+=yyleng; }
+[-]?{num}+	{
+				/* minus num */
+				printf("Line: %d,1st char: %d, \"%s\" is an \"Interger\".\n", line, position, yytext); 
+				position += yyleng;
+			}
 
 [-]?{num}+[.]{num}+[eE][-+]?{num}+[.]{num}+ |
 [-]?{num}+[.]{num}+[eE][-+]?{num}+ |
 [-]?{num}+[eE][-+]?{num}+[.]{num}+ |
 [-]?{num}+[eE][-+]?{num}+ |
-[-]?{num}+[.]{num}+	{ printf("Line: %d,1st char: %d, \"%s\" is a \"real\".\n",line,position,yytext); 
-		  	  position+=yyleng; }  
+[-]?{num}+[.]{num}+	{
+						/* float and science num */
+						printf("Line: %d,1st char: %d, \"%s\" is a \"real\".\n", line, position, yytext); 
+		  	  			position += yyleng;
+		  	  		}  
 
-{symbol} 		{ printf("Line: %d,1st char: %d, \"%s\" is a \"symbol\".\n",line,position,yytext); 
-			  position+=yyleng; 
-			 }	
+{symbol}	{
+				/* Symbol */
+				printf("Line: %d,1st char: %d, \"%s\" is a \"symbol\".\n", line, position, yytext); 
+				position += yyleng; 
+			}	
 
-{operator} 		{ printf("Line: %d,1st char: %d, \"%s\" is an \"operator\".\n",line,position,yytext); 
-			  position+=yyleng; }
+{operator}	{
+				/* Operators */
+				printf("Line: %d,1st char: %d, \"%s\" is an \"operator\".\n", line, position, yytext); 
+			 	position += yyleng;
+			}
 
-{ch}+{numch}*		{ printf("Line: %d,1st char: %d, \"%s\" is an \"ID\".\n",line,position,yytext); 
-			  position+=yyleng;
-			  int p=lookup(yytext);
-			  if(p==-1)
-				tail=insert(yytext); 
+{id}		{
+				/* IDs */
+				printf("Line: %d,1st char: %d, \"%s\" is an \"ID\".\n", line, position, yytext); 
+				position += yyleng;
+				
+				int p = lookup(yytext);
+				if( p == -1 )
+					tail = insert(yytext); 
 			}
 		
-{num}+{numch}*	{ printf("Line : %d,1st char: %d, \"%s\" is an \"ID\".\n",line,position,yytext);
-		  printf("      ERROR on \"%s\" : You have invaild ID name.\n",yytext);
-		  position+=yyleng; }
+{xid}	{
+			/* Error id format */
+			printf("Line: %d,1st char: %d, \"%s\" is an error \"ID\".\n", line, position, yytext);
+			//printf("      ERROR on \"%s\" : You have invaild ID name.\n", yytext);
+			position += yyleng;
+		}
  
-.		{ position++; }
+.	{
+		/* ignore bad characters */
+		position++;
+	}
 
 %%
 
 int main()
 {
-	position=1;
-	line=1;
-	tail=-1;
+	position = 1; /* char position in line */
+	line = 1; /* line number counter */
+	tail = -1; /* the last index in hash table */
 	
-	creat();
-	yylex();
-	dump();
+	creat(); /* create hash table for id */
+	yylex(); /* run lex match program */
+	dump(); /* print hash table */
 	return 0;
 }
 
 void creat()
 {
 	int i;
-	for(i=0;i<MAX_BUFFER;i++)
-		hash_table[i]=NULL;
+	for( i = 0; i<MAX_BUFFER; i++ )
+		hash_table[i] = NULL;
+
 	return ;
 }
 
-int lookup(char *s)
+int lookup( char *id )
 {
-	int seat=0;
-	while( hash_table[seat]!=NULL && strcmp(hash_table[seat],s) )
-		seat++;	
-	if(hash_table[seat]!=NULL)
-		return seat;
+	int index = 0;
+
+	/* find the index of id in hash table */
+	while( hash_table[index] != NULL )
+	{
+		if( !strcmp(hash_table[index], id) )
+			return index;
+		index++;
+	}
+
 	return -1;
 }
 
-int insert(char *s)
+int insert( char *id )
 {
-	int seat=tail+1;
-	hash_table[seat]=(char*) malloc(sizeof(char)*MAX_BUFFER);
-	strcpy( hash_table[seat] , s);
-	return seat;
+	int index = tail + 1;
+	hash_table[index] = (char*)malloc(sizeof(char) * MAX_BUFFER);
+	strcpy(hash_table[index], id);
+	return index;
 }
 
 void dump()
 {
 	printf("The symbol table contains : \n");
-	int seat=0;
-	while(hash_table[seat]!=NULL)
-		printf("%s\n",hash_table[seat++]);
+	
+	int i = 0;
+	for( i = 0; i<=tail; i++ )
+		printf("%s\n", hash_table[i]);
+		
 	return ;
 }
 
-char* cut(char* s, int len)
+/* format_str(yytext,yyleng) */
+
+char* format_str(char* s, int len)
 {
-	char* str;
-	str=(char*) malloc(sizeof(char)*MAX_BUFFER);
-	strcpy(str,s);
-	int i=0;
-	for( i=0 ; i<len ; i++)
+	char* fs;
+	fs = (char*)malloc(sizeof(char) * MAX_BUFFER);
+	strcpy(fs, s);
+	
+	int i = 0;
+	for( i=0; i<len-1; i++)
 	{	
-		if(i<len-1)
+		if( fs[i] == '\\' && fs[i+1] == '"' || fs[i] == '\\' && fs[i+1] == '\\' )
 		{
-			if((str[i]=='"' || str[i]=='\\') && str[i+1]=='"')
-			{	
-				int j=i;
-				for(j=i;j<len-1;j++)
-					str[j]=str[j+1];
-				str[--len]=0;
-			}		
+			int j = i;
+			for( j = i; j<len-1; j++ )
+			{
+				fs[j] = fs[j+1];
+			}
+			len--;
+			fs[len] = '\0';
 		}
 	}
-	return str;
+
+	return fs;
 }
