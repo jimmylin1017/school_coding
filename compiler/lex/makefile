@@ -1,5 +1,5 @@
 all:LEX
 
 LEX:
-	flex ex.l
+	flex B033040006.l
 	gcc lex.yy.c -lfl

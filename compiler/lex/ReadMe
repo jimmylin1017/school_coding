@@ -1,0 +1,185 @@
+Lex 版本:
+$ flex --version
+flex 2.6.0
+
+作業平台:
+$ uname --all
+Linux wu1604-VirtualBox 4.4.0-70-generic #91-Ubuntu SMP Wed Mar 22 12:47:43 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+
+執行方式:
+$ make
+flex B033040006.l
+gcc lex.yy.c -lfl
+$ ./a.out < test1.java
+$ ./a.out < test2.java
+$ ./a.out < test3.java
+
+如何處理這份規格書上的問題:
+
+上網找有關 lex 的語法教學，尋找看有沒有 C 的範例 lex 文件，並思考在 Java 有哪些可能出現的合法或不合法的情況
+
+寫這個作業所遇到的問題:
+
+在 Windows 下的換行字元或多個 \r，且因為 Regular Expression 中的 . 或包括到 \r，所以要特別拿出來處理
+
+所有測試檔執行出來的結果，存成圖片或文字檔:
+
+$ ./a.out < test1.java 
+Line: 2,1st char: 1, "public" is a "reserved word".
+Line: 2,1st char: 8, "class" is a "reserved word".
+Line: 2,1st char: 14, "Test1" is an "ID".
+Line: 2,1st char: 20, "{" is a "symbol".
+Line: 3,1st char: 5, "public" is a "reserved word".
+Line: 3,1st char: 12, "static" is a "reserved word".
+Line: 3,1st char: 19, "int" is a "reserved word".
+Line: 3,1st char: 23, "add" is an "ID".
+Line: 3,1st char: 26, "(" is a "symbol".
+Line: 3,1st char: 27, "int" is a "reserved word".
+Line: 3,1st char: 31, "a" is an "ID".
+Line: 3,1st char: 32, "," is a "symbol".
+Line: 3,1st char: 34, "int" is a "reserved word".
+Line: 3,1st char: 38, "b" is an "ID".
+Line: 3,1st char: 39, ")" is a "symbol".
+Line: 3,1st char: 41, "{" is a "symbol".
+Line: 4,1st char: 9, "return" is a "reserved word".
+Line: 4,1st char: 16, "a" is an "ID".
+Line: 4,1st char: 18, "+" is an "operator".
+Line: 4,1st char: 20, "b" is an "ID".
+Line: 4,1st char: 21, ";" is a "symbol".
+Line: 5,1st char: 5, "}" is a "symbol".
+Line: 7,1st char: 5, "public" is a "reserved word".
+Line: 7,1st char: 12, "static" is a "reserved word".
+Line: 7,1st char: 19, "void" is a "reserved word".
+Line: 7,1st char: 24, "main" is an "ID".
+Line: 7,1st char: 28, "(" is a "symbol".
+Line: 7,1st char: 29, ")" is a "symbol".
+Line: 7,1st char: 31, "{" is a "symbol".
+Line: 9,1st char: 9, "int" is a "reserved word".
+Line: 9,1st char: 13, "c" is an "ID".
+Line: 9,1st char: 14, ";" is a "symbol".
+Line: 10,1st char: 9, "int" is a "reserved word".
+Line: 10,1st char: 13, "a" is an "ID".
+Line: 10,1st char: 15, "=" is an "operator".
+Line: 10,1st char: 17, "5" is an "Interger".
+Line: 10,1st char: 18, ";" is a "symbol".
+Line: 11,1st char: 9, "c" is an "ID".
+Line: 11,1st char: 11, "=" is an "operator".
+Line: 11,1st char: 13, "add" is an "ID".
+Line: 11,1st char: 16, "(" is a "symbol".
+Line: 11,1st char: 17, "a" is an "ID".
+Line: 11,1st char: 18, "," is a "symbol".
+Line: 11,1st char: 20, "10" is an "Interger".
+Line: 11,1st char: 22, ")" is a "symbol".
+Line: 11,1st char: 23, ";" is a "symbol".
+Line: 12,1st char: 9, "if" is a "reserved word".
+Line: 12,1st char: 12, "(" is a "symbol".
+Line: 12,1st char: 13, "c" is an "ID".
+Line: 12,1st char: 15, ">" is an "operator".
+Line: 12,1st char: 17, "10" is an "Interger".
+Line: 12,1st char: 19, ")" is a "symbol".
+Line: 13,1st char: 13, "print" is an "ID".
+Line: 13,1st char: 18, "(" is a "symbol".
+Line: 13,1st char: 20, "c = " is a "string".
+Line: 13,1st char: 26, "+" is an "operator".
+Line: 13,1st char: 28, "-" is an "operator".
+Line: 13,1st char: 29, "c" is an "ID".
+Line: 13,1st char: 30, ")" is a "symbol".
+Line: 13,1st char: 31, ";" is a "symbol".
+Line: 14,1st char: 9, "else" is a "reserved word".
+Line: 15,1st char: 13, "print" is an "ID".
+Line: 15,1st char: 18, "(" is a "symbol".
+Line: 15,1st char: 19, "c" is an "ID".
+Line: 15,1st char: 20, ")" is a "symbol".
+Line: 15,1st char: 21, ";" is a "symbol".
+Line: 16,1st char: 9, "print" is an "ID".
+Line: 16,1st char: 14, "(" is a "symbol".
+Line: 16,1st char: 16, "Hello World" is a "string".
+Line: 16,1st char: 28, ")" is a "symbol".
+Line: 16,1st char: 29, ";" is a "symbol".
+Line: 18,1st char: 5, "}" is a "symbol".
+Line: 20,1st char: 1, "}" is a "symbol".
+The symbol table contains : 
+Test1
+add
+a
+b
+main
+c
+print
+
+
+$ ./a.out < test2.java 
+Line: 1,1st char: 1, "// this is a comment // line */ /* with /* delimiters */ before the end" is a "comment".
+Line: 3,1st char: 1, "public" is a "reserved word".
+Line: 3,1st char: 8, "class" is a "reserved word".
+Line: 3,1st char: 14, "Test2" is an "ID".
+Line: 3,1st char: 20, "{" is a "symbol".
+Line: 4,1st char: 5, "int" is a "reserved word".
+Line: 4,1st char: 9, "i" is an "ID".
+Line: 4,1st char: 11, "=" is an "operator".
+Line: 4,1st char: 13, "-100" is an "Interger".
+Line: 4,1st char: 17, ";" is a "symbol".
+Line: 5,1st char: 5, "double" is a "reserved word".
+Line: 5,1st char: 12, "d" is an "ID".
+Line: 5,1st char: 14, "=" is an "operator".
+Line: 5,1st char: 16, "12.25e+6" is a "real".
+Line: 5,1st char: 24, ";" is a "symbol".
+Line: 7,1st char: 5, "public" is a "reserved word".
+Line: 7,1st char: 12, "static" is a "reserved word".
+Line: 7,1st char: 19, "void" is a "reserved word".
+Line: 7,1st char: 24, "main" is an "ID".
+Line: 7,1st char: 28, "(" is a "symbol".
+Line: 7,1st char: 29, ")" is a "symbol".
+Line: 7,1st char: 31, "{" is a "symbol".
+Line: 8,1st char: 1, "/* this is a comment // line with some /* and
+// delimiters */" is a "comment".
+Line: 10,1st char: 5, "}" is a "symbol".
+Line: 11,1st char: 1, "}" is a "symbol".
+The symbol table contains : 
+Test2
+i
+d
+main
+
+
+$ ./a.out < test3.java 
+Line: 2,1st char: 1, "public" is a "reserved word".
+Line: 2,1st char: 8, "class" is a "reserved word".
+Line: 2,1st char: 14, "Test3" is an "ID".
+Line: 2,1st char: 20, "{" is a "symbol".
+Line: 3,1st char: 5, "int" is a "reserved word".
+Line: 3,1st char: 9, "A" is an "ID".
+Line: 3,1st char: 10, ";" is a "symbol".
+Line: 4,1st char: 5, "int" is a "reserved word".
+Line: 4,1st char: 9, "a" is an "ID".
+Line: 5,1st char: 5, "double" is a "reserved word".
+Line: 5,1st char: 12, "b" is an "ID".
+Line: 5,1st char: 13, ";" is a "symbol".
+Line: 6,1st char: 5, "double" is a "reserved word".
+Line: 6,1st char: 12, "A" is an "ID".
+Line: 6,1st char: 13, ";" is a "symbol".
+Line: 8,1st char: 5, "public" is a "reserved word".
+Line: 8,1st char: 12, "Test3" is an "ID".
+Line: 8,1st char: 17, "(" is a "symbol".
+Line: 8,1st char: 18, ")" is a "symbol".
+Line: 8,1st char: 20, "{" is a "symbol".
+Line: 9,1st char: 9, "a" is an "ID".
+Line: 9,1st char: 11, "=" is an "operator".
+Line: 9,1st char: 13, "1" is an "Interger".
+Line: 9,1st char: 14, ";" is a "symbol".
+Line: 10,1st char: 9, "A" is an "ID".
+Line: 10,1st char: 11, "=" is an "operator".
+Line: 10,1st char: 13, "2" is an "Interger".
+Line: 10,1st char: 14, ";" is a "symbol".
+Line: 11,1st char: 9, "b" is an "ID".
+Line: 11,1st char: 11, "=" is an "operator".
+Line: 11,1st char: 13, "-1.2" is a "real".
+Line: 11,1st char: 17, ";" is a "symbol".
+Line: 12,1st char: 5, "}" is a "symbol".
+Line: 13,1st char: 1, "}" is a "symbol".
+The symbol table contains : 
+Test3
+A
+a
+b
+

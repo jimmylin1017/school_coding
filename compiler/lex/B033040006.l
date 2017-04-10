@@ -83,8 +83,9 @@ if	{
 			}
 
 {str}+	{
-			printf("Line: %d,1st char: %d, %s is a \"string\".\n", line, position, format_str(yytext,yyleng));
-			printf("      Original: %s\n", yytext);
+			//printf("Line: %d,1st char: %d, %s is a \"string\".\n", line, position, format_str(yytext,yyleng));
+			printf("Line: %d,1st char: %d, %s is a \"string\".\n", line, position + 1, yytext);
+			//printf("      Original: %s\n", yytext);
 	  		position += yyleng;
 		}
 
