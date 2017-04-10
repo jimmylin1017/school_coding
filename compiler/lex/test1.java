@@ -1,4 +1,4 @@
-/* **** A *****A****/
+
 public class Test1 {
     public static int add(int a, int b) {
         return a + b;
@@ -8,14 +8,12 @@ public class Test1 {
 
         int c;
         int a = 5;
-        int 1a;
         c = add(a, 10);
         if (c > 10)
             print("c = " + -c);
         else
             print(c);
-        print(""Hello  World");
-        print("\\Hello \" World");
+        print("Hello World");
 
     }
 

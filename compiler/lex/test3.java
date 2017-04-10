@@ -9,6 +9,5 @@ public class Test3 {
         a = 1;
         A = 2;
         b = -1.2;
-        b++;
     }
 }
