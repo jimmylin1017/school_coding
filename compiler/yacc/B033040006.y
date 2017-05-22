@@ -15,7 +15,6 @@ extern int position; /* char 的位置 */
 extern int line; /* 當前的行數 */
 extern int tail; /* hash table 中的最後一個元素 */
 extern int layer; /* 判斷括號的層數 */
-extern int newline; /* 判斷是否遇到 end of line */
 extern int comment; /* 判斷是否是 comment */
 extern int mistake; /* 判斷是否有錯誤 */
 
@@ -52,7 +51,7 @@ extern void have_newline();
 %token NEW CONST FINAL STATIC
 %token PRINT READ 
 %token PUBLIC PROTECTED PRIVATE EXTENDS FINALLY
-%token IMPLEMENTS RETURN
+%token IMPLEMENTS RETURN EXCEPTION
 
 %token DOUBLE_OPERATOR COMPARE_BOOL CONNECT_BOOL EQUAL
 %token REAL_DATA INT_DATA STRING_DATA
@@ -63,7 +62,7 @@ extern void have_newline();
 %%
 class_modifier : PROTECTED | PRIVATE | PUBLIC ;
 data_modifier : STATIC | FINAL | CONST ;
-data_type : VOID | INT | FLOAT | DOUBEL | CHAR | BOOLEAN | STRING ; 
+data_type : VOID | INT | FLOAT | DOUBEL | CHAR | BOOLEAN | STRING | EXCEPTION ; 
 prefix : DOUBLE_OPERATOR | '+' | '-' ;
 postfix : DOUBLE_OPERATOR ;
 const_expr : REAL_DATA | INT_DATA | STRING_DATA ;
@@ -213,7 +212,7 @@ loop_simple_or_compound : loop_simple
  | loop_compound
  ;
 
-for_init : INT for_init_assign for_init_assign_list 
+for_init : data_type for_init_assign for_init_assign_list 
  | for_init_assign for_init_assign_list
  ;
 
@@ -335,8 +334,8 @@ loop_simple : name EQUAL expression ';'
  | PRINT '(' expression ')' ';'
  | READ '(' name ')' ';'
  | expression ';'
- | CONTINUE
- | BREAK
+ | CONTINUE ';'
+ | BREAK ';'
  ;
 
 simple : name EQUAL expression ';'
@@ -347,6 +346,7 @@ simple : name EQUAL expression ';'
  
 name : ID
  | ID '.' ID
+ | THIS '.' ID
  ;
 
 expression : term
@@ -409,7 +409,7 @@ int main()
 void yyerror(char *str)
 {
 	mistake = 1;
-	sprintf(error_msg2,"> ERROR : Line %d at %d [%s] has %s. \n",line, position-yyleng+1, yytext, str);
+	sprintf(error_msg2,"> ERROR : Line %d at %d [%s] has %s. \n", line, position-yyleng+1, yytext, str);
 	strcat(error_msg, error_msg2);
 	return ;
 }
@@ -426,6 +426,6 @@ void duplicate(char *s)
 	else
 	{
 		mistake = 1;
-		sprintf(error_msg,"> ERROR : Line %d ,\'%s\' is a duplicate identifier.\n",line,s);
+		sprintf(error_msg,"> ERROR : Line %d at %d \'%s\' is a duplicate identifier.\n", line-yyleng, position, s);
 	}
 }

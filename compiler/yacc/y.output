@@ -1,0 +1,5652 @@
+文法
+
+    0 $accept: START $end
+
+    1 class_modifier: PROTECTED
+    2               | PRIVATE
+    3               | PUBLIC
+
+    4 data_modifier: STATIC
+    5              | FINAL
+    6              | CONST
+
+    7 data_type: VOID
+    8          | INT
+    9          | FLOAT
+   10          | DOUBEL
+   11          | CHAR
+   12          | BOOLEAN
+   13          | STRING
+   14          | EXCEPTION
+
+   15 prefix: DOUBLE_OPERATOR
+   16       | '+'
+   17       | '-'
+
+   18 postfix: DOUBLE_OPERATOR
+
+   19 const_expr: REAL_DATA
+   20           | INT_DATA
+   21           | STRING_DATA
+
+   22 START: %empty
+   23      | class_declarations START
+
+   24 class_declarations: class_modifier CLASS ID '{' statement '}'
+   25                   | CLASS ID '{' statement '}'
+   26                   | class_modifier CLASS ID class_extends '{' statement '}'
+   27                   | CLASS ID class_extends '{' statement '}'
+   28                   | class_modifier CLASS ID class_implements class_implements_list '{' statement '}'
+   29                   | CLASS ID class_implements class_implements_list '{' statement '}'
+
+   30 class_extends: EXTENDS ID
+
+   31 class_implements: IMPLEMENTS ID
+
+   32 class_implements_list: %empty
+   33                      | ',' ID class_implements_list
+
+   34 variable_declarations: data_modifier data_type identifier_declarations ';'
+   35                      | data_type identifier_declarations ';'
+   36                      | ID identifier_declarations ID '(' ')' ';'
+   37                      | error
+
+   38 identifier_declarations: identifier identifier_list
+   39                        | '[' ']' array array_list
+
+   40 identifier: ID
+   41           | ID EQUAL expression
+   42           | ID EQUAL NEW
+
+   43 identifier_list: %empty
+   44                | ',' identifier identifier_list
+
+   45 array: ID EQUAL NEW data_type '[' expression ']'
+
+   46 array_list: %empty
+   47           | ',' array array_list
+
+   48 condition: IF '(' boolean_expr boolean_expr_list ')' simple_or_compound
+   49          | IF '(' boolean_expr boolean_expr_list ')' simple_or_compound ELSE simple_or_compound
+
+   50 simple_or_compound: simple
+   51                   | compound
+
+   52 boolean_expr: expression COMPARE_BOOL expression
+   53             | TRUE
+   54             | FALSE
+
+   55 boolean_expr_list: %empty
+   56                  | CONNECT_BOOL boolean_expr boolean_expr_list
+
+   57 compound: '{' statement '}'
+
+   58 loop: WHILE '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound
+   59     | DO loop_compound WHILE '(' boolean_expr boolean_expr_list ')' ';'
+   60     | FOR '(' for_init ';' boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+   61 loop_condition: IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound
+   62               | IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound ELSE loop_simple_or_compound
+
+   63 loop_simple_or_compound: loop_simple
+   64                        | loop_compound
+
+   65 for_init: data_type for_init_assign for_init_assign_list
+   66         | for_init_assign for_init_assign_list
+
+   67 for_init_assign: ID EQUAL expression
+
+   68 for_init_assign_list: %empty
+   69                     | ',' for_init_assign for_init_assign_list
+
+   70 for_update: ID postfix
+   71           | prefix ID
+
+   72 loop_compound: '{' loop_statement '}'
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter ')' compound FINALLY compound
+   74                  | TRY compound CATCH '(' parameter ')' compound
+
+   75 switch_case_default: SWITCH '(' ID ')' switch_compound
+
+   76 switch_compound: '{' switch_statement '}'
+   77                | '{' switch_statement DEFAULT ':' statement '}'
+
+   78 switch_statement: %empty
+   79                 | CASE const_expr ':' statement BREAK ';' switch_statement
+   80                 | CASE const_expr ':' statement switch_statement
+
+   81 parameter: %empty
+   82          | argv argv_list
+
+   83 argv: data_type ID
+
+   84 argv_list: %empty
+   85          | ',' argv argv_list
+
+   86 statement: %empty
+   87          | compound statement
+   88          | simple statement
+   89          | condition statement
+   90          | loop statement
+   91          | return statement
+   92          | method_declaration statement
+   93          | variable_declarations statement
+   94          | try_catch_finally statement
+   95          | switch_case_default statement
+
+   96 loop_statement: %empty
+   97               | loop_compound loop_statement
+   98               | simple loop_statement
+   99               | loop_condition loop_statement
+  100               | loop loop_statement
+  101               | return loop_statement
+  102               | method_declaration loop_statement
+  103               | variable_declarations loop_statement
+  104               | try_catch_finally loop_statement
+  105               | CONTINUE ';'
+  106               | BREAK ';'
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter ')' '{' statement '}'
+  108                   | class_modifier data_type ID '(' parameter ')' '{' statement '}'
+  109                   | data_type ID '(' parameter ')' '{' statement '}'
+  110                   | MAIN '(' ')' '{' statement '}'
+
+  111 loop_simple: name EQUAL expression ';'
+  112            | PRINT '(' expression ')' ';'
+  113            | READ '(' name ')' ';'
+  114            | expression ';'
+  115            | CONTINUE ';'
+  116            | BREAK ';'
+
+  117 simple: name EQUAL expression ';'
+  118       | PRINT '(' expression ')' ';'
+  119       | READ '(' name ')' ';'
+  120       | expression ';'
+
+  121 name: ID
+  122     | ID '.' ID
+  123     | THIS '.' ID
+
+  124 expression: term
+  125           | expression '+' term
+  126           | expression '-' term
+
+  127 term: factor factor_list
+
+  128 factor: ID
+  129       | ID '[' ID ']'
+  130       | ID '[' INT_DATA ']'
+  131       | const_expr
+  132       | '(' expression ')'
+  133       | prefix name
+  134       | name postfix
+  135       | method_invocation
+
+  136 factor_list: %empty
+  137            | '*' factor
+  138            | '/' factor
+
+  139 method_invocation: name '(' argument ')'
+
+  140 argument: %empty
+  141         | expression argument_list
+
+  142 argument_list: %empty
+  143              | ',' expression argument_list
+
+  144 return: RETURN expression ';' '\n'
+
+
+終結語詞，附有它們出現處的規則
+
+$end (0) 0
+'\n' (10) 144
+'(' (40) 36 48 49 58 59 60 61 62 73 74 75 107 108 109 110 112 113 118
+    119 132 139
+')' (41) 36 48 49 58 59 60 61 62 73 74 75 107 108 109 110 112 113 118
+    119 132 139
+'*' (42) 137
+'+' (43) 16 125
+',' (44) 33 44 47 69 85 143
+'-' (45) 17 126
+'.' (46) 122 123
+'/' (47) 138
+':' (58) 77 79 80
+';' (59) 34 35 36 59 60 79 105 106 111 112 113 114 115 116 117 118
+    119 120 144
+'[' (91) 39 45 129 130
+']' (93) 39 45 129 130
+'{' (123) 24 25 26 27 28 29 57 72 76 77 107 108 109 110
+'}' (125) 24 25 26 27 28 29 57 72 76 77 107 108 109 110
+error (256) 37
+CLASS (258) 24 25 26 27 28 29
+MAIN (259) 110
+THIS (260) 123
+IF (261) 48 49 61 62
+ELSE (262) 49 62
+SWITCH (263) 75
+CASE (264) 79 80
+DEFAULT (265) 77
+FOR (266) 60
+DO (267) 59
+WHILE (268) 58 59
+CONTINUE (269) 105 115
+BREAK (270) 79 106 116
+TRY (271) 73 74
+CATCH (272) 73 74
+TRUE (273) 53
+FALSE (274) 54
+VOID (275) 7
+INT (276) 8
+FLOAT (277) 9
+DOUBEL (278) 10
+CHAR (279) 11
+BOOLEAN (280) 12
+STRING (281) 13
+NEW (282) 42 45
+CONST (283) 6
+FINAL (284) 5
+STATIC (285) 4
+PRINT (286) 112 118
+READ (287) 113 119
+PUBLIC (288) 3
+PROTECTED (289) 1
+PRIVATE (290) 2
+EXTENDS (291) 30
+FINALLY (292) 73
+IMPLEMENTS (293) 31
+RETURN (294) 144
+EXCEPTION (295) 14
+DOUBLE_OPERATOR (296) 15 18
+COMPARE_BOOL (297) 52
+CONNECT_BOOL (298) 56
+EQUAL (299) 41 42 45 67 111 117
+REAL_DATA (300) 19
+INT_DATA (301) 20 130
+STRING_DATA (302) 21
+ID (303) 24 25 26 27 28 29 30 31 33 36 40 41 42 45 67 70 71 75 83 107
+    108 109 121 122 123 128 129 130
+
+
+非終結語詞，附有它們出現處的規則
+
+$accept (64)
+    於左側： 0
+class_modifier (65)
+    於左側： 1 2 3, 於右側： 24 26 28 107 108
+data_modifier (66)
+    於左側： 4 5 6, 於右側： 34 107
+data_type (67)
+    於左側： 7 8 9 10 11 12 13 14, 於右側： 34 35 45 65 83
+    107 108 109
+prefix (68)
+    於左側： 15 16 17, 於右側： 71 133
+postfix (69)
+    於左側： 18, 於右側： 70 134
+const_expr (70)
+    於左側： 19 20 21, 於右側： 79 80 131
+START (71)
+    於左側： 22 23, 於右側： 0 23
+class_declarations (72)
+    於左側： 24 25 26 27 28 29, 於右側： 23
+class_extends (73)
+    於左側： 30, 於右側： 26 27
+class_implements (74)
+    於左側： 31, 於右側： 28 29
+class_implements_list (75)
+    於左側： 32 33, 於右側： 28 29 33
+variable_declarations (76)
+    於左側： 34 35 36 37, 於右側： 93 103
+identifier_declarations (77)
+    於左側： 38 39, 於右側： 34 35 36
+identifier (78)
+    於左側： 40 41 42, 於右側： 38 44
+identifier_list (79)
+    於左側： 43 44, 於右側： 38 44
+array (80)
+    於左側： 45, 於右側： 39 47
+array_list (81)
+    於左側： 46 47, 於右側： 39 47
+condition (82)
+    於左側： 48 49, 於右側： 89
+simple_or_compound (83)
+    於左側： 50 51, 於右側： 48 49
+boolean_expr (84)
+    於左側： 52 53 54, 於右側： 48 49 56 58 59 60 61 62
+boolean_expr_list (85)
+    於左側： 55 56, 於右側： 48 49 56 58 59 60 61 62
+compound (86)
+    於左側： 57, 於右側： 51 73 74 87
+loop (87)
+    於左側： 58 59 60, 於右側： 90 100
+loop_condition (88)
+    於左側： 61 62, 於右側： 99
+loop_simple_or_compound (89)
+    於左側： 63 64, 於右側： 58 60 61 62
+for_init (90)
+    於左側： 65 66, 於右側： 60
+for_init_assign (91)
+    於左側： 67, 於右側： 65 66 69
+for_init_assign_list (92)
+    於左側： 68 69, 於右側： 65 66 69
+for_update (93)
+    於左側： 70 71, 於右側： 60
+loop_compound (94)
+    於左側： 72, 於右側： 59 64 97
+try_catch_finally (95)
+    於左側： 73 74, 於右側： 94 104
+switch_case_default (96)
+    於左側： 75, 於右側： 95
+switch_compound (97)
+    於左側： 76 77, 於右側： 75
+switch_statement (98)
+    於左側： 78 79 80, 於右側： 76 77 79 80
+parameter (99)
+    於左側： 81 82, 於右側： 73 74 107 108 109
+argv (100)
+    於左側： 83, 於右側： 82 85
+argv_list (101)
+    於左側： 84 85, 於右側： 82 85
+statement (102)
+    於左側： 86 87 88 89 90 91 92 93 94 95, 於右側： 24 25
+    26 27 28 29 57 77 79 80 87 88 89 90 91 92 93 94 95 107 108 109
+    110
+loop_statement (103)
+    於左側： 96 97 98 99 100 101 102 103 104 105 106, 於右側：
+    72 97 98 99 100 101 102 103 104
+method_declaration (104)
+    於左側： 107 108 109 110, 於右側： 92 102
+loop_simple (105)
+    於左側： 111 112 113 114 115 116, 於右側： 63
+simple (106)
+    於左側： 117 118 119 120, 於右側： 50 88 98
+name (107)
+    於左側： 121 122 123, 於右側： 111 113 117 119 133 134
+    139
+expression (108)
+    於左側： 124 125 126, 於右側： 41 45 52 67 111 112 114
+    117 118 120 125 126 132 141 143 144
+term (109)
+    於左側： 127, 於右側： 124 125 126
+factor (110)
+    於左側： 128 129 130 131 132 133 134 135, 於右側： 127
+    137 138
+factor_list (111)
+    於左側： 136 137 138, 於右側： 127
+method_invocation (112)
+    於左側： 139, 於右側： 135
+argument (113)
+    於左側： 140 141, 於右側： 139
+argument_list (114)
+    於左側： 142 143, 於右側： 141 143
+return (115)
+    於左側： 144, 於右側： 91 101
+
+
+狀態 0
+
+    0 $accept: . START $end
+
+    CLASS      偏移，並進入狀態 1
+    PUBLIC     偏移，並進入狀態 2
+    PROTECTED  偏移，並進入狀態 3
+    PRIVATE    偏移，並進入狀態 4
+
+    $預設  使用規則 22 以縮減 (START)
+
+    class_modifier      進入狀態 5
+    START               進入狀態 6
+    class_declarations  進入狀態 7
+
+
+狀態 1
+
+   25 class_declarations: CLASS . ID '{' statement '}'
+   27                   | CLASS . ID class_extends '{' statement '}'
+   29                   | CLASS . ID class_implements class_implements_list '{' statement '}'
+
+    ID  偏移，並進入狀態 8
+
+
+狀態 2
+
+    3 class_modifier: PUBLIC .
+
+    $預設  使用規則 3 以縮減 (class_modifier)
+
+
+狀態 3
+
+    1 class_modifier: PROTECTED .
+
+    $預設  使用規則 1 以縮減 (class_modifier)
+
+
+狀態 4
+
+    2 class_modifier: PRIVATE .
+
+    $預設  使用規則 2 以縮減 (class_modifier)
+
+
+狀態 5
+
+   24 class_declarations: class_modifier . CLASS ID '{' statement '}'
+   26                   | class_modifier . CLASS ID class_extends '{' statement '}'
+   28                   | class_modifier . CLASS ID class_implements class_implements_list '{' statement '}'
+
+    CLASS  偏移，並進入狀態 9
+
+
+狀態 6
+
+    0 $accept: START . $end
+
+    $end  偏移，並進入狀態 10
+
+
+狀態 7
+
+   23 START: class_declarations . START
+
+    CLASS      偏移，並進入狀態 1
+    PUBLIC     偏移，並進入狀態 2
+    PROTECTED  偏移，並進入狀態 3
+    PRIVATE    偏移，並進入狀態 4
+
+    $預設  使用規則 22 以縮減 (START)
+
+    class_modifier      進入狀態 5
+    START               進入狀態 11
+    class_declarations  進入狀態 7
+
+
+狀態 8
+
+   25 class_declarations: CLASS ID . '{' statement '}'
+   27                   | CLASS ID . class_extends '{' statement '}'
+   29                   | CLASS ID . class_implements class_implements_list '{' statement '}'
+
+    EXTENDS     偏移，並進入狀態 12
+    IMPLEMENTS  偏移，並進入狀態 13
+    '{'         偏移，並進入狀態 14
+
+    class_extends     進入狀態 15
+    class_implements  進入狀態 16
+
+
+狀態 9
+
+   24 class_declarations: class_modifier CLASS . ID '{' statement '}'
+   26                   | class_modifier CLASS . ID class_extends '{' statement '}'
+   28                   | class_modifier CLASS . ID class_implements class_implements_list '{' statement '}'
+
+    ID  偏移，並進入狀態 17
+
+
+狀態 10
+
+    0 $accept: START $end .
+
+    $預設  接受
+
+
+狀態 11
+
+   23 START: class_declarations START .
+
+    $預設  使用規則 23 以縮減 (START)
+
+
+狀態 12
+
+   30 class_extends: EXTENDS . ID
+
+    ID  偏移，並進入狀態 18
+
+
+狀態 13
+
+   31 class_implements: IMPLEMENTS . ID
+
+    ID  偏移，並進入狀態 19
+
+
+狀態 14
+
+   25 class_declarations: CLASS ID '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 63
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 15
+
+   27 class_declarations: CLASS ID class_extends . '{' statement '}'
+
+    '{'  偏移，並進入狀態 72
+
+
+狀態 16
+
+   29 class_declarations: CLASS ID class_implements . class_implements_list '{' statement '}'
+
+    ','  偏移，並進入狀態 73
+
+    $預設  使用規則 32 以縮減 (class_implements_list)
+
+    class_implements_list  進入狀態 74
+
+
+狀態 17
+
+   24 class_declarations: class_modifier CLASS ID . '{' statement '}'
+   26                   | class_modifier CLASS ID . class_extends '{' statement '}'
+   28                   | class_modifier CLASS ID . class_implements class_implements_list '{' statement '}'
+
+    EXTENDS     偏移，並進入狀態 12
+    IMPLEMENTS  偏移，並進入狀態 13
+    '{'         偏移，並進入狀態 75
+
+    class_extends     進入狀態 76
+    class_implements  進入狀態 77
+
+
+狀態 18
+
+   30 class_extends: EXTENDS ID .
+
+    $預設  使用規則 30 以縮減 (class_extends)
+
+
+狀態 19
+
+   31 class_implements: IMPLEMENTS ID .
+
+    $預設  使用規則 31 以縮減 (class_implements)
+
+
+狀態 20
+
+   37 variable_declarations: error .
+
+    $預設  使用規則 37 以縮減 (variable_declarations)
+
+
+狀態 21
+
+  110 method_declaration: MAIN . '(' ')' '{' statement '}'
+
+    '('  偏移，並進入狀態 78
+
+
+狀態 22
+
+  123 name: THIS . '.' ID
+
+    '.'  偏移，並進入狀態 79
+
+
+狀態 23
+
+   48 condition: IF . '(' boolean_expr boolean_expr_list ')' simple_or_compound
+   49          | IF . '(' boolean_expr boolean_expr_list ')' simple_or_compound ELSE simple_or_compound
+
+    '('  偏移，並進入狀態 80
+
+
+狀態 24
+
+   75 switch_case_default: SWITCH . '(' ID ')' switch_compound
+
+    '('  偏移，並進入狀態 81
+
+
+狀態 25
+
+   60 loop: FOR . '(' for_init ';' boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+    '('  偏移，並進入狀態 82
+
+
+狀態 26
+
+   59 loop: DO . loop_compound WHILE '(' boolean_expr boolean_expr_list ')' ';'
+
+    '{'  偏移，並進入狀態 83
+
+    loop_compound  進入狀態 84
+
+
+狀態 27
+
+   58 loop: WHILE . '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound
+
+    '('  偏移，並進入狀態 85
+
+
+狀態 28
+
+   73 try_catch_finally: TRY . compound CATCH '(' parameter ')' compound FINALLY compound
+   74                  | TRY . compound CATCH '(' parameter ')' compound
+
+    '{'  偏移，並進入狀態 50
+
+    compound  進入狀態 86
+
+
+狀態 29
+
+    7 data_type: VOID .
+
+    $預設  使用規則 7 以縮減 (data_type)
+
+
+狀態 30
+
+    8 data_type: INT .
+
+    $預設  使用規則 8 以縮減 (data_type)
+
+
+狀態 31
+
+    9 data_type: FLOAT .
+
+    $預設  使用規則 9 以縮減 (data_type)
+
+
+狀態 32
+
+   10 data_type: DOUBEL .
+
+    $預設  使用規則 10 以縮減 (data_type)
+
+
+狀態 33
+
+   11 data_type: CHAR .
+
+    $預設  使用規則 11 以縮減 (data_type)
+
+
+狀態 34
+
+   12 data_type: BOOLEAN .
+
+    $預設  使用規則 12 以縮減 (data_type)
+
+
+狀態 35
+
+   13 data_type: STRING .
+
+    $預設  使用規則 13 以縮減 (data_type)
+
+
+狀態 36
+
+    6 data_modifier: CONST .
+
+    $預設  使用規則 6 以縮減 (data_modifier)
+
+
+狀態 37
+
+    5 data_modifier: FINAL .
+
+    $預設  使用規則 5 以縮減 (data_modifier)
+
+
+狀態 38
+
+    4 data_modifier: STATIC .
+
+    $預設  使用規則 4 以縮減 (data_modifier)
+
+
+狀態 39
+
+  118 simple: PRINT . '(' expression ')' ';'
+
+    '('  偏移，並進入狀態 87
+
+
+狀態 40
+
+  119 simple: READ . '(' name ')' ';'
+
+    '('  偏移，並進入狀態 88
+
+
+狀態 41
+
+  144 return: RETURN . expression ';' '\n'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 91
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 42
+
+   14 data_type: EXCEPTION .
+
+    $預設  使用規則 14 以縮減 (data_type)
+
+
+狀態 43
+
+   15 prefix: DOUBLE_OPERATOR .
+
+    $預設  使用規則 15 以縮減 (prefix)
+
+
+狀態 44
+
+   19 const_expr: REAL_DATA .
+
+    $預設  使用規則 19 以縮減 (const_expr)
+
+
+狀態 45
+
+   20 const_expr: INT_DATA .
+
+    $預設  使用規則 20 以縮減 (const_expr)
+
+
+狀態 46
+
+   21 const_expr: STRING_DATA .
+
+    $預設  使用規則 21 以縮減 (const_expr)
+
+
+狀態 47
+
+   36 variable_declarations: ID . identifier_declarations ID '(' ')' ';'
+  121 name: ID .
+  122     | ID . '.' ID
+  128 factor: ID .
+  129       | ID . '[' ID ']'
+  130       | ID . '[' INT_DATA ']'
+
+    ID   偏移，並進入狀態 92
+    '['  偏移，並進入狀態 93
+    '.'  偏移，並進入狀態 94
+
+    DOUBLE_OPERATOR  使用規則 121 以縮減 (name)
+    EQUAL            使用規則 121 以縮減 (name)
+    '('              使用規則 121 以縮減 (name)
+    $預設          使用規則 128 以縮減 (factor)
+
+    identifier_declarations  進入狀態 95
+    identifier               進入狀態 96
+
+
+狀態 48
+
+   16 prefix: '+' .
+
+    $預設  使用規則 16 以縮減 (prefix)
+
+
+狀態 49
+
+   17 prefix: '-' .
+
+    $預設  使用規則 17 以縮減 (prefix)
+
+
+狀態 50
+
+   57 compound: '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 97
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 51
+
+  132 factor: '(' . expression ')'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 98
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 52
+
+  107 method_declaration: class_modifier . data_modifier data_type ID '(' parameter ')' '{' statement '}'
+  108                   | class_modifier . data_type ID '(' parameter ')' '{' statement '}'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    CONST      偏移，並進入狀態 36
+    FINAL      偏移，並進入狀態 37
+    STATIC     偏移，並進入狀態 38
+    EXCEPTION  偏移，並進入狀態 42
+
+    data_modifier  進入狀態 99
+    data_type      進入狀態 100
+
+
+狀態 53
+
+   34 variable_declarations: data_modifier . data_type identifier_declarations ';'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    data_type  進入狀態 101
+
+
+狀態 54
+
+   35 variable_declarations: data_type . identifier_declarations ';'
+  109 method_declaration: data_type . ID '(' parameter ')' '{' statement '}'
+
+    ID   偏移，並進入狀態 102
+    '['  偏移，並進入狀態 103
+
+    identifier_declarations  進入狀態 104
+    identifier               進入狀態 96
+
+
+狀態 55
+
+  133 factor: prefix . name
+
+    THIS  偏移，並進入狀態 22
+    ID    偏移，並進入狀態 105
+
+    name  進入狀態 106
+
+
+狀態 56
+
+  131 factor: const_expr .
+
+    $預設  使用規則 131 以縮減 (factor)
+
+
+狀態 57
+
+   93 statement: variable_declarations . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 107
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 58
+
+   89 statement: condition . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 108
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 59
+
+   87 statement: compound . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 109
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 60
+
+   90 statement: loop . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 110
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 61
+
+   94 statement: try_catch_finally . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 111
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 62
+
+   95 statement: switch_case_default . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 112
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 63
+
+   25 class_declarations: CLASS ID '{' statement . '}'
+
+    '}'  偏移，並進入狀態 113
+
+
+狀態 64
+
+   92 statement: method_declaration . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 114
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 65
+
+   88 statement: simple . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 115
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 66
+
+  117 simple: name . EQUAL expression ';'
+  134 factor: name . postfix
+  139 method_invocation: name . '(' argument ')'
+
+    DOUBLE_OPERATOR  偏移，並進入狀態 116
+    EQUAL            偏移，並進入狀態 117
+    '('              偏移，並進入狀態 118
+
+    postfix  進入狀態 119
+
+
+狀態 67
+
+  120 simple: expression . ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ';'  偏移，並進入狀態 122
+
+
+狀態 68
+
+  124 expression: term .
+
+    $預設  使用規則 124 以縮減 (expression)
+
+
+狀態 69
+
+  127 term: factor . factor_list
+
+    '*'  偏移，並進入狀態 123
+    '/'  偏移，並進入狀態 124
+
+    $預設  使用規則 136 以縮減 (factor_list)
+
+    factor_list  進入狀態 125
+
+
+狀態 70
+
+  135 factor: method_invocation .
+
+    $預設  使用規則 135 以縮減 (factor)
+
+
+狀態 71
+
+   91 statement: return . statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 126
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 72
+
+   27 class_declarations: CLASS ID class_extends '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 127
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 73
+
+   33 class_implements_list: ',' . ID class_implements_list
+
+    ID  偏移，並進入狀態 128
+
+
+狀態 74
+
+   29 class_declarations: CLASS ID class_implements class_implements_list . '{' statement '}'
+
+    '{'  偏移，並進入狀態 129
+
+
+狀態 75
+
+   24 class_declarations: class_modifier CLASS ID '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 130
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 76
+
+   26 class_declarations: class_modifier CLASS ID class_extends . '{' statement '}'
+
+    '{'  偏移，並進入狀態 131
+
+
+狀態 77
+
+   28 class_declarations: class_modifier CLASS ID class_implements . class_implements_list '{' statement '}'
+
+    ','  偏移，並進入狀態 73
+
+    $預設  使用規則 32 以縮減 (class_implements_list)
+
+    class_implements_list  進入狀態 132
+
+
+狀態 78
+
+  110 method_declaration: MAIN '(' . ')' '{' statement '}'
+
+    ')'  偏移，並進入狀態 133
+
+
+狀態 79
+
+  123 name: THIS '.' . ID
+
+    ID  偏移，並進入狀態 134
+
+
+狀態 80
+
+   48 condition: IF '(' . boolean_expr boolean_expr_list ')' simple_or_compound
+   49          | IF '(' . boolean_expr boolean_expr_list ')' simple_or_compound ELSE simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 137
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 81
+
+   75 switch_case_default: SWITCH '(' . ID ')' switch_compound
+
+    ID  偏移，並進入狀態 139
+
+
+狀態 82
+
+   60 loop: FOR '(' . for_init ';' boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+    ID         偏移，並進入狀態 140
+
+    data_type        進入狀態 141
+    for_init         進入狀態 142
+    for_init_assign  進入狀態 143
+
+
+狀態 83
+
+   72 loop_compound: '{' . loop_statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 152
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 84
+
+   59 loop: DO loop_compound . WHILE '(' boolean_expr boolean_expr_list ')' ';'
+
+    WHILE  偏移，並進入狀態 156
+
+
+狀態 85
+
+   58 loop: WHILE '(' . boolean_expr boolean_expr_list ')' loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 157
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 86
+
+   73 try_catch_finally: TRY compound . CATCH '(' parameter ')' compound FINALLY compound
+   74                  | TRY compound . CATCH '(' parameter ')' compound
+
+    CATCH  偏移，並進入狀態 158
+
+
+狀態 87
+
+  118 simple: PRINT '(' . expression ')' ';'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 159
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 88
+
+  119 simple: READ '(' . name ')' ';'
+
+    THIS  偏移，並進入狀態 22
+    ID    偏移，並進入狀態 105
+
+    name  進入狀態 160
+
+
+狀態 89
+
+  121 name: ID .
+  122     | ID . '.' ID
+  128 factor: ID .
+  129       | ID . '[' ID ']'
+  130       | ID . '[' INT_DATA ']'
+
+    '['  偏移，並進入狀態 161
+    '.'  偏移，並進入狀態 94
+
+    DOUBLE_OPERATOR  使用規則 121 以縮減 (name)
+    EQUAL            使用規則 121 以縮減 (name)
+    '('              使用規則 121 以縮減 (name)
+    $預設          使用規則 128 以縮減 (factor)
+
+
+狀態 90
+
+  134 factor: name . postfix
+  139 method_invocation: name . '(' argument ')'
+
+    DOUBLE_OPERATOR  偏移，並進入狀態 116
+    '('              偏移，並進入狀態 118
+
+    postfix  進入狀態 119
+
+
+狀態 91
+
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+  144 return: RETURN expression . ';' '\n'
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ';'  偏移，並進入狀態 162
+
+
+狀態 92
+
+   40 identifier: ID .
+   41           | ID . EQUAL expression
+   42           | ID . EQUAL NEW
+
+    EQUAL  偏移，並進入狀態 163
+
+    $預設  使用規則 40 以縮減 (identifier)
+
+
+狀態 93
+
+   39 identifier_declarations: '[' . ']' array array_list
+  129 factor: ID '[' . ID ']'
+  130       | ID '[' . INT_DATA ']'
+
+    INT_DATA  偏移，並進入狀態 164
+    ID        偏移，並進入狀態 165
+    ']'       偏移，並進入狀態 166
+
+
+狀態 94
+
+  122 name: ID '.' . ID
+
+    ID  偏移，並進入狀態 167
+
+
+狀態 95
+
+   36 variable_declarations: ID identifier_declarations . ID '(' ')' ';'
+
+    ID  偏移，並進入狀態 168
+
+
+狀態 96
+
+   38 identifier_declarations: identifier . identifier_list
+
+    ','  偏移，並進入狀態 169
+
+    $預設  使用規則 43 以縮減 (identifier_list)
+
+    identifier_list  進入狀態 170
+
+
+狀態 97
+
+   57 compound: '{' statement . '}'
+
+    '}'  偏移，並進入狀態 171
+
+
+狀態 98
+
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+  132 factor: '(' expression . ')'
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ')'  偏移，並進入狀態 172
+
+
+狀態 99
+
+  107 method_declaration: class_modifier data_modifier . data_type ID '(' parameter ')' '{' statement '}'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    data_type  進入狀態 173
+
+
+狀態 100
+
+  108 method_declaration: class_modifier data_type . ID '(' parameter ')' '{' statement '}'
+
+    ID  偏移，並進入狀態 174
+
+
+狀態 101
+
+   34 variable_declarations: data_modifier data_type . identifier_declarations ';'
+
+    ID   偏移，並進入狀態 92
+    '['  偏移，並進入狀態 103
+
+    identifier_declarations  進入狀態 175
+    identifier               進入狀態 96
+
+
+狀態 102
+
+   40 identifier: ID .
+   41           | ID . EQUAL expression
+   42           | ID . EQUAL NEW
+  109 method_declaration: data_type ID . '(' parameter ')' '{' statement '}'
+
+    EQUAL  偏移，並進入狀態 163
+    '('    偏移，並進入狀態 176
+
+    $預設  使用規則 40 以縮減 (identifier)
+
+
+狀態 103
+
+   39 identifier_declarations: '[' . ']' array array_list
+
+    ']'  偏移，並進入狀態 166
+
+
+狀態 104
+
+   35 variable_declarations: data_type identifier_declarations . ';'
+
+    ';'  偏移，並進入狀態 177
+
+
+狀態 105
+
+  121 name: ID .
+  122     | ID . '.' ID
+
+    '.'  偏移，並進入狀態 94
+
+    $預設  使用規則 121 以縮減 (name)
+
+
+狀態 106
+
+  133 factor: prefix name .
+
+    $預設  使用規則 133 以縮減 (factor)
+
+
+狀態 107
+
+   93 statement: variable_declarations statement .
+
+    $預設  使用規則 93 以縮減 (statement)
+
+
+狀態 108
+
+   89 statement: condition statement .
+
+    $預設  使用規則 89 以縮減 (statement)
+
+
+狀態 109
+
+   87 statement: compound statement .
+
+    $預設  使用規則 87 以縮減 (statement)
+
+
+狀態 110
+
+   90 statement: loop statement .
+
+    $預設  使用規則 90 以縮減 (statement)
+
+
+狀態 111
+
+   94 statement: try_catch_finally statement .
+
+    $預設  使用規則 94 以縮減 (statement)
+
+
+狀態 112
+
+   95 statement: switch_case_default statement .
+
+    $預設  使用規則 95 以縮減 (statement)
+
+
+狀態 113
+
+   25 class_declarations: CLASS ID '{' statement '}' .
+
+    $預設  使用規則 25 以縮減 (class_declarations)
+
+
+狀態 114
+
+   92 statement: method_declaration statement .
+
+    $預設  使用規則 92 以縮減 (statement)
+
+
+狀態 115
+
+   88 statement: simple statement .
+
+    $預設  使用規則 88 以縮減 (statement)
+
+
+狀態 116
+
+   18 postfix: DOUBLE_OPERATOR .
+
+    $預設  使用規則 18 以縮減 (postfix)
+
+
+狀態 117
+
+  117 simple: name EQUAL . expression ';'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 178
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 118
+
+  139 method_invocation: name '(' . argument ')'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    $預設  使用規則 140 以縮減 (argument)
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 179
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+    argument           進入狀態 180
+
+
+狀態 119
+
+  134 factor: name postfix .
+
+    $預設  使用規則 134 以縮減 (factor)
+
+
+狀態 120
+
+  125 expression: expression '+' . term
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    term               進入狀態 181
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 121
+
+  126 expression: expression '-' . term
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    term               進入狀態 182
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 122
+
+  120 simple: expression ';' .
+
+    $預設  使用規則 120 以縮減 (simple)
+
+
+狀態 123
+
+  137 factor_list: '*' . factor
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    factor             進入狀態 183
+    method_invocation  進入狀態 70
+
+
+狀態 124
+
+  138 factor_list: '/' . factor
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    factor             進入狀態 184
+    method_invocation  進入狀態 70
+
+
+狀態 125
+
+  127 term: factor factor_list .
+
+    $預設  使用規則 127 以縮減 (term)
+
+
+狀態 126
+
+   91 statement: return statement .
+
+    $預設  使用規則 91 以縮減 (statement)
+
+
+狀態 127
+
+   27 class_declarations: CLASS ID class_extends '{' statement . '}'
+
+    '}'  偏移，並進入狀態 185
+
+
+狀態 128
+
+   33 class_implements_list: ',' ID . class_implements_list
+
+    ','  偏移，並進入狀態 73
+
+    $預設  使用規則 32 以縮減 (class_implements_list)
+
+    class_implements_list  進入狀態 186
+
+
+狀態 129
+
+   29 class_declarations: CLASS ID class_implements class_implements_list '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 187
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 130
+
+   24 class_declarations: class_modifier CLASS ID '{' statement . '}'
+
+    '}'  偏移，並進入狀態 188
+
+
+狀態 131
+
+   26 class_declarations: class_modifier CLASS ID class_extends '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 189
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 132
+
+   28 class_declarations: class_modifier CLASS ID class_implements class_implements_list . '{' statement '}'
+
+    '{'  偏移，並進入狀態 190
+
+
+狀態 133
+
+  110 method_declaration: MAIN '(' ')' . '{' statement '}'
+
+    '{'  偏移，並進入狀態 191
+
+
+狀態 134
+
+  123 name: THIS '.' ID .
+
+    $預設  使用規則 123 以縮減 (name)
+
+
+狀態 135
+
+   53 boolean_expr: TRUE .
+
+    $預設  使用規則 53 以縮減 (boolean_expr)
+
+
+狀態 136
+
+   54 boolean_expr: FALSE .
+
+    $預設  使用規則 54 以縮減 (boolean_expr)
+
+
+狀態 137
+
+   48 condition: IF '(' boolean_expr . boolean_expr_list ')' simple_or_compound
+   49          | IF '(' boolean_expr . boolean_expr_list ')' simple_or_compound ELSE simple_or_compound
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 193
+
+
+狀態 138
+
+   52 boolean_expr: expression . COMPARE_BOOL expression
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    COMPARE_BOOL  偏移，並進入狀態 194
+    '+'           偏移，並進入狀態 120
+    '-'           偏移，並進入狀態 121
+
+
+狀態 139
+
+   75 switch_case_default: SWITCH '(' ID . ')' switch_compound
+
+    ')'  偏移，並進入狀態 195
+
+
+狀態 140
+
+   67 for_init_assign: ID . EQUAL expression
+
+    EQUAL  偏移，並進入狀態 196
+
+
+狀態 141
+
+   65 for_init: data_type . for_init_assign for_init_assign_list
+
+    ID  偏移，並進入狀態 140
+
+    for_init_assign  進入狀態 197
+
+
+狀態 142
+
+   60 loop: FOR '(' for_init . ';' boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+    ';'  偏移，並進入狀態 198
+
+
+狀態 143
+
+   66 for_init: for_init_assign . for_init_assign_list
+
+    ','  偏移，並進入狀態 199
+
+    $預設  使用規則 68 以縮減 (for_init_assign_list)
+
+    for_init_assign_list  進入狀態 200
+
+
+狀態 144
+
+   61 loop_condition: IF . '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound
+   62               | IF . '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound ELSE loop_simple_or_compound
+
+    '('  偏移，並進入狀態 201
+
+
+狀態 145
+
+  105 loop_statement: CONTINUE . ';'
+
+    ';'  偏移，並進入狀態 202
+
+
+狀態 146
+
+  106 loop_statement: BREAK . ';'
+
+    ';'  偏移，並進入狀態 203
+
+
+狀態 147
+
+  103 loop_statement: variable_declarations . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 204
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 148
+
+  100 loop_statement: loop . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 205
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 149
+
+   99 loop_statement: loop_condition . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 206
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 150
+
+   97 loop_statement: loop_compound . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 207
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 151
+
+  104 loop_statement: try_catch_finally . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 208
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 152
+
+   72 loop_compound: '{' loop_statement . '}'
+
+    '}'  偏移，並進入狀態 209
+
+
+狀態 153
+
+  102 loop_statement: method_declaration . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 210
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 154
+
+   98 loop_statement: simple . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 211
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 155
+
+  101 loop_statement: return . loop_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 144
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    CONTINUE         偏移，並進入狀態 145
+    BREAK            偏移，並進入狀態 146
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 96 以縮減 (loop_statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 147
+    loop                   進入狀態 148
+    loop_condition         進入狀態 149
+    loop_compound          進入狀態 150
+    try_catch_finally      進入狀態 151
+    loop_statement         進入狀態 212
+    method_declaration     進入狀態 153
+    simple                 進入狀態 154
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 155
+
+
+狀態 156
+
+   59 loop: DO loop_compound WHILE . '(' boolean_expr boolean_expr_list ')' ';'
+
+    '('  偏移，並進入狀態 213
+
+
+狀態 157
+
+   58 loop: WHILE '(' boolean_expr . boolean_expr_list ')' loop_simple_or_compound
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 214
+
+
+狀態 158
+
+   73 try_catch_finally: TRY compound CATCH . '(' parameter ')' compound FINALLY compound
+   74                  | TRY compound CATCH . '(' parameter ')' compound
+
+    '('  偏移，並進入狀態 215
+
+
+狀態 159
+
+  118 simple: PRINT '(' expression . ')' ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ')'  偏移，並進入狀態 216
+
+
+狀態 160
+
+  119 simple: READ '(' name . ')' ';'
+
+    ')'  偏移，並進入狀態 217
+
+
+狀態 161
+
+  129 factor: ID '[' . ID ']'
+  130       | ID '[' . INT_DATA ']'
+
+    INT_DATA  偏移，並進入狀態 164
+    ID        偏移，並進入狀態 165
+
+
+狀態 162
+
+  144 return: RETURN expression ';' . '\n'
+
+    '\n'  偏移，並進入狀態 218
+
+
+狀態 163
+
+   41 identifier: ID EQUAL . expression
+   42           | ID EQUAL . NEW
+
+    THIS             偏移，並進入狀態 22
+    NEW              偏移，並進入狀態 219
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 220
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 164
+
+  130 factor: ID '[' INT_DATA . ']'
+
+    ']'  偏移，並進入狀態 221
+
+
+狀態 165
+
+  129 factor: ID '[' ID . ']'
+
+    ']'  偏移，並進入狀態 222
+
+
+狀態 166
+
+   39 identifier_declarations: '[' ']' . array array_list
+
+    ID  偏移，並進入狀態 223
+
+    array  進入狀態 224
+
+
+狀態 167
+
+  122 name: ID '.' ID .
+
+    $預設  使用規則 122 以縮減 (name)
+
+
+狀態 168
+
+   36 variable_declarations: ID identifier_declarations ID . '(' ')' ';'
+
+    '('  偏移，並進入狀態 225
+
+
+狀態 169
+
+   44 identifier_list: ',' . identifier identifier_list
+
+    ID  偏移，並進入狀態 92
+
+    identifier  進入狀態 226
+
+
+狀態 170
+
+   38 identifier_declarations: identifier identifier_list .
+
+    $預設  使用規則 38 以縮減 (identifier_declarations)
+
+
+狀態 171
+
+   57 compound: '{' statement '}' .
+
+    $預設  使用規則 57 以縮減 (compound)
+
+
+狀態 172
+
+  132 factor: '(' expression ')' .
+
+    $預設  使用規則 132 以縮減 (factor)
+
+
+狀態 173
+
+  107 method_declaration: class_modifier data_modifier data_type . ID '(' parameter ')' '{' statement '}'
+
+    ID  偏移，並進入狀態 227
+
+
+狀態 174
+
+  108 method_declaration: class_modifier data_type ID . '(' parameter ')' '{' statement '}'
+
+    '('  偏移，並進入狀態 228
+
+
+狀態 175
+
+   34 variable_declarations: data_modifier data_type identifier_declarations . ';'
+
+    ';'  偏移，並進入狀態 229
+
+
+狀態 176
+
+  109 method_declaration: data_type ID '(' . parameter ')' '{' statement '}'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    $預設  使用規則 81 以縮減 (parameter)
+
+    data_type  進入狀態 230
+    parameter  進入狀態 231
+    argv       進入狀態 232
+
+
+狀態 177
+
+   35 variable_declarations: data_type identifier_declarations ';' .
+
+    $預設  使用規則 35 以縮減 (variable_declarations)
+
+
+狀態 178
+
+  117 simple: name EQUAL expression . ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ';'  偏移，並進入狀態 233
+
+
+狀態 179
+
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+  141 argument: expression . argument_list
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ','  偏移，並進入狀態 234
+
+    $預設  使用規則 142 以縮減 (argument_list)
+
+    argument_list  進入狀態 235
+
+
+狀態 180
+
+  139 method_invocation: name '(' argument . ')'
+
+    ')'  偏移，並進入狀態 236
+
+
+狀態 181
+
+  125 expression: expression '+' term .
+
+    $預設  使用規則 125 以縮減 (expression)
+
+
+狀態 182
+
+  126 expression: expression '-' term .
+
+    $預設  使用規則 126 以縮減 (expression)
+
+
+狀態 183
+
+  137 factor_list: '*' factor .
+
+    $預設  使用規則 137 以縮減 (factor_list)
+
+
+狀態 184
+
+  138 factor_list: '/' factor .
+
+    $預設  使用規則 138 以縮減 (factor_list)
+
+
+狀態 185
+
+   27 class_declarations: CLASS ID class_extends '{' statement '}' .
+
+    $預設  使用規則 27 以縮減 (class_declarations)
+
+
+狀態 186
+
+   33 class_implements_list: ',' ID class_implements_list .
+
+    $預設  使用規則 33 以縮減 (class_implements_list)
+
+
+狀態 187
+
+   29 class_declarations: CLASS ID class_implements class_implements_list '{' statement . '}'
+
+    '}'  偏移，並進入狀態 237
+
+
+狀態 188
+
+   24 class_declarations: class_modifier CLASS ID '{' statement '}' .
+
+    $預設  使用規則 24 以縮減 (class_declarations)
+
+
+狀態 189
+
+   26 class_declarations: class_modifier CLASS ID class_extends '{' statement . '}'
+
+    '}'  偏移，並進入狀態 238
+
+
+狀態 190
+
+   28 class_declarations: class_modifier CLASS ID class_implements class_implements_list '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 239
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 191
+
+  110 method_declaration: MAIN '(' ')' '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 240
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 192
+
+   56 boolean_expr_list: CONNECT_BOOL . boolean_expr boolean_expr_list
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 241
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 193
+
+   48 condition: IF '(' boolean_expr boolean_expr_list . ')' simple_or_compound
+   49          | IF '(' boolean_expr boolean_expr_list . ')' simple_or_compound ELSE simple_or_compound
+
+    ')'  偏移，並進入狀態 242
+
+
+狀態 194
+
+   52 boolean_expr: expression COMPARE_BOOL . expression
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 243
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 195
+
+   75 switch_case_default: SWITCH '(' ID ')' . switch_compound
+
+    '{'  偏移，並進入狀態 244
+
+    switch_compound  進入狀態 245
+
+
+狀態 196
+
+   67 for_init_assign: ID EQUAL . expression
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 246
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 197
+
+   65 for_init: data_type for_init_assign . for_init_assign_list
+
+    ','  偏移，並進入狀態 199
+
+    $預設  使用規則 68 以縮減 (for_init_assign_list)
+
+    for_init_assign_list  進入狀態 247
+
+
+狀態 198
+
+   60 loop: FOR '(' for_init ';' . boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 248
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 199
+
+   69 for_init_assign_list: ',' . for_init_assign for_init_assign_list
+
+    ID  偏移，並進入狀態 140
+
+    for_init_assign  進入狀態 249
+
+
+狀態 200
+
+   66 for_init: for_init_assign for_init_assign_list .
+
+    $預設  使用規則 66 以縮減 (for_init)
+
+
+狀態 201
+
+   61 loop_condition: IF '(' . boolean_expr boolean_expr_list ')' loop_simple_or_compound
+   62               | IF '(' . boolean_expr boolean_expr_list ')' loop_simple_or_compound ELSE loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 250
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 202
+
+  105 loop_statement: CONTINUE ';' .
+
+    $預設  使用規則 105 以縮減 (loop_statement)
+
+
+狀態 203
+
+  106 loop_statement: BREAK ';' .
+
+    $預設  使用規則 106 以縮減 (loop_statement)
+
+
+狀態 204
+
+  103 loop_statement: variable_declarations loop_statement .
+
+    $預設  使用規則 103 以縮減 (loop_statement)
+
+
+狀態 205
+
+  100 loop_statement: loop loop_statement .
+
+    $預設  使用規則 100 以縮減 (loop_statement)
+
+
+狀態 206
+
+   99 loop_statement: loop_condition loop_statement .
+
+    $預設  使用規則 99 以縮減 (loop_statement)
+
+
+狀態 207
+
+   97 loop_statement: loop_compound loop_statement .
+
+    $預設  使用規則 97 以縮減 (loop_statement)
+
+
+狀態 208
+
+  104 loop_statement: try_catch_finally loop_statement .
+
+    $預設  使用規則 104 以縮減 (loop_statement)
+
+
+狀態 209
+
+   72 loop_compound: '{' loop_statement '}' .
+
+    $預設  使用規則 72 以縮減 (loop_compound)
+
+
+狀態 210
+
+  102 loop_statement: method_declaration loop_statement .
+
+    $預設  使用規則 102 以縮減 (loop_statement)
+
+
+狀態 211
+
+   98 loop_statement: simple loop_statement .
+
+    $預設  使用規則 98 以縮減 (loop_statement)
+
+
+狀態 212
+
+  101 loop_statement: return loop_statement .
+
+    $預設  使用規則 101 以縮減 (loop_statement)
+
+
+狀態 213
+
+   59 loop: DO loop_compound WHILE '(' . boolean_expr boolean_expr_list ')' ';'
+
+    THIS             偏移，並進入狀態 22
+    TRUE             偏移，並進入狀態 135
+    FALSE            偏移，並進入狀態 136
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    boolean_expr       進入狀態 251
+    name               進入狀態 90
+    expression         進入狀態 138
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 214
+
+   58 loop: WHILE '(' boolean_expr boolean_expr_list . ')' loop_simple_or_compound
+
+    ')'  偏移，並進入狀態 252
+
+
+狀態 215
+
+   73 try_catch_finally: TRY compound CATCH '(' . parameter ')' compound FINALLY compound
+   74                  | TRY compound CATCH '(' . parameter ')' compound
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    $預設  使用規則 81 以縮減 (parameter)
+
+    data_type  進入狀態 230
+    parameter  進入狀態 253
+    argv       進入狀態 232
+
+
+狀態 216
+
+  118 simple: PRINT '(' expression ')' . ';'
+
+    ';'  偏移，並進入狀態 254
+
+
+狀態 217
+
+  119 simple: READ '(' name ')' . ';'
+
+    ';'  偏移，並進入狀態 255
+
+
+狀態 218
+
+  144 return: RETURN expression ';' '\n' .
+
+    $預設  使用規則 144 以縮減 (return)
+
+
+狀態 219
+
+   42 identifier: ID EQUAL NEW .
+
+    $預設  使用規則 42 以縮減 (identifier)
+
+
+狀態 220
+
+   41 identifier: ID EQUAL expression .
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+
+    $預設  使用規則 41 以縮減 (identifier)
+
+
+狀態 221
+
+  130 factor: ID '[' INT_DATA ']' .
+
+    $預設  使用規則 130 以縮減 (factor)
+
+
+狀態 222
+
+  129 factor: ID '[' ID ']' .
+
+    $預設  使用規則 129 以縮減 (factor)
+
+
+狀態 223
+
+   45 array: ID . EQUAL NEW data_type '[' expression ']'
+
+    EQUAL  偏移，並進入狀態 256
+
+
+狀態 224
+
+   39 identifier_declarations: '[' ']' array . array_list
+
+    ','  偏移，並進入狀態 257
+
+    $預設  使用規則 46 以縮減 (array_list)
+
+    array_list  進入狀態 258
+
+
+狀態 225
+
+   36 variable_declarations: ID identifier_declarations ID '(' . ')' ';'
+
+    ')'  偏移，並進入狀態 259
+
+
+狀態 226
+
+   44 identifier_list: ',' identifier . identifier_list
+
+    ','  偏移，並進入狀態 169
+
+    $預設  使用規則 43 以縮減 (identifier_list)
+
+    identifier_list  進入狀態 260
+
+
+狀態 227
+
+  107 method_declaration: class_modifier data_modifier data_type ID . '(' parameter ')' '{' statement '}'
+
+    '('  偏移，並進入狀態 261
+
+
+狀態 228
+
+  108 method_declaration: class_modifier data_type ID '(' . parameter ')' '{' statement '}'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    $預設  使用規則 81 以縮減 (parameter)
+
+    data_type  進入狀態 230
+    parameter  進入狀態 262
+    argv       進入狀態 232
+
+
+狀態 229
+
+   34 variable_declarations: data_modifier data_type identifier_declarations ';' .
+
+    $預設  使用規則 34 以縮減 (variable_declarations)
+
+
+狀態 230
+
+   83 argv: data_type . ID
+
+    ID  偏移，並進入狀態 263
+
+
+狀態 231
+
+  109 method_declaration: data_type ID '(' parameter . ')' '{' statement '}'
+
+    ')'  偏移，並進入狀態 264
+
+
+狀態 232
+
+   82 parameter: argv . argv_list
+
+    ','  偏移，並進入狀態 265
+
+    $預設  使用規則 84 以縮減 (argv_list)
+
+    argv_list  進入狀態 266
+
+
+狀態 233
+
+  117 simple: name EQUAL expression ';' .
+
+    $預設  使用規則 117 以縮減 (simple)
+
+
+狀態 234
+
+  143 argument_list: ',' . expression argument_list
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 267
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 235
+
+  141 argument: expression argument_list .
+
+    $預設  使用規則 141 以縮減 (argument)
+
+
+狀態 236
+
+  139 method_invocation: name '(' argument ')' .
+
+    $預設  使用規則 139 以縮減 (method_invocation)
+
+
+狀態 237
+
+   29 class_declarations: CLASS ID class_implements class_implements_list '{' statement '}' .
+
+    $預設  使用規則 29 以縮減 (class_declarations)
+
+
+狀態 238
+
+   26 class_declarations: class_modifier CLASS ID class_extends '{' statement '}' .
+
+    $預設  使用規則 26 以縮減 (class_declarations)
+
+
+狀態 239
+
+   28 class_declarations: class_modifier CLASS ID class_implements class_implements_list '{' statement . '}'
+
+    '}'  偏移，並進入狀態 268
+
+
+狀態 240
+
+  110 method_declaration: MAIN '(' ')' '{' statement . '}'
+
+    '}'  偏移，並進入狀態 269
+
+
+狀態 241
+
+   56 boolean_expr_list: CONNECT_BOOL boolean_expr . boolean_expr_list
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 270
+
+
+狀態 242
+
+   48 condition: IF '(' boolean_expr boolean_expr_list ')' . simple_or_compound
+   49          | IF '(' boolean_expr boolean_expr_list ')' . simple_or_compound ELSE simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    prefix              進入狀態 55
+    const_expr          進入狀態 56
+    simple_or_compound  進入狀態 271
+    compound            進入狀態 272
+    simple              進入狀態 273
+    name                進入狀態 66
+    expression          進入狀態 67
+    term                進入狀態 68
+    factor              進入狀態 69
+    method_invocation   進入狀態 70
+
+
+狀態 243
+
+   52 boolean_expr: expression COMPARE_BOOL expression .
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+
+    $預設  使用規則 52 以縮減 (boolean_expr)
+
+
+狀態 244
+
+   76 switch_compound: '{' . switch_statement '}'
+   77                | '{' . switch_statement DEFAULT ':' statement '}'
+
+    CASE  偏移，並進入狀態 274
+
+    $預設  使用規則 78 以縮減 (switch_statement)
+
+    switch_statement  進入狀態 275
+
+
+狀態 245
+
+   75 switch_case_default: SWITCH '(' ID ')' switch_compound .
+
+    $預設  使用規則 75 以縮減 (switch_case_default)
+
+
+狀態 246
+
+   67 for_init_assign: ID EQUAL expression .
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+
+    $預設  使用規則 67 以縮減 (for_init_assign)
+
+
+狀態 247
+
+   65 for_init: data_type for_init_assign for_init_assign_list .
+
+    $預設  使用規則 65 以縮減 (for_init)
+
+
+狀態 248
+
+   60 loop: FOR '(' for_init ';' boolean_expr . boolean_expr_list ';' for_update ')' loop_simple_or_compound
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 276
+
+
+狀態 249
+
+   69 for_init_assign_list: ',' for_init_assign . for_init_assign_list
+
+    ','  偏移，並進入狀態 199
+
+    $預設  使用規則 68 以縮減 (for_init_assign_list)
+
+    for_init_assign_list  進入狀態 277
+
+
+狀態 250
+
+   61 loop_condition: IF '(' boolean_expr . boolean_expr_list ')' loop_simple_or_compound
+   62               | IF '(' boolean_expr . boolean_expr_list ')' loop_simple_or_compound ELSE loop_simple_or_compound
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 278
+
+
+狀態 251
+
+   59 loop: DO loop_compound WHILE '(' boolean_expr . boolean_expr_list ')' ';'
+
+    CONNECT_BOOL  偏移，並進入狀態 192
+
+    $預設  使用規則 55 以縮減 (boolean_expr_list)
+
+    boolean_expr_list  進入狀態 279
+
+
+狀態 252
+
+   58 loop: WHILE '(' boolean_expr boolean_expr_list ')' . loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    CONTINUE         偏移，並進入狀態 280
+    BREAK            偏移，並進入狀態 281
+    PRINT            偏移，並進入狀態 282
+    READ             偏移，並進入狀態 283
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    prefix                   進入狀態 55
+    const_expr               進入狀態 56
+    loop_simple_or_compound  進入狀態 284
+    loop_compound            進入狀態 285
+    loop_simple              進入狀態 286
+    name                     進入狀態 287
+    expression               進入狀態 288
+    term                     進入狀態 68
+    factor                   進入狀態 69
+    method_invocation        進入狀態 70
+
+
+狀態 253
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter . ')' compound FINALLY compound
+   74                  | TRY compound CATCH '(' parameter . ')' compound
+
+    ')'  偏移，並進入狀態 289
+
+
+狀態 254
+
+  118 simple: PRINT '(' expression ')' ';' .
+
+    $預設  使用規則 118 以縮減 (simple)
+
+
+狀態 255
+
+  119 simple: READ '(' name ')' ';' .
+
+    $預設  使用規則 119 以縮減 (simple)
+
+
+狀態 256
+
+   45 array: ID EQUAL . NEW data_type '[' expression ']'
+
+    NEW  偏移，並進入狀態 290
+
+
+狀態 257
+
+   47 array_list: ',' . array array_list
+
+    ID  偏移，並進入狀態 223
+
+    array  進入狀態 291
+
+
+狀態 258
+
+   39 identifier_declarations: '[' ']' array array_list .
+
+    $預設  使用規則 39 以縮減 (identifier_declarations)
+
+
+狀態 259
+
+   36 variable_declarations: ID identifier_declarations ID '(' ')' . ';'
+
+    ';'  偏移，並進入狀態 292
+
+
+狀態 260
+
+   44 identifier_list: ',' identifier identifier_list .
+
+    $預設  使用規則 44 以縮減 (identifier_list)
+
+
+狀態 261
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' . parameter ')' '{' statement '}'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    $預設  使用規則 81 以縮減 (parameter)
+
+    data_type  進入狀態 230
+    parameter  進入狀態 293
+    argv       進入狀態 232
+
+
+狀態 262
+
+  108 method_declaration: class_modifier data_type ID '(' parameter . ')' '{' statement '}'
+
+    ')'  偏移，並進入狀態 294
+
+
+狀態 263
+
+   83 argv: data_type ID .
+
+    $預設  使用規則 83 以縮減 (argv)
+
+
+狀態 264
+
+  109 method_declaration: data_type ID '(' parameter ')' . '{' statement '}'
+
+    '{'  偏移，並進入狀態 295
+
+
+狀態 265
+
+   85 argv_list: ',' . argv argv_list
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    data_type  進入狀態 230
+    argv       進入狀態 296
+
+
+狀態 266
+
+   82 parameter: argv argv_list .
+
+    $預設  使用規則 82 以縮減 (parameter)
+
+
+狀態 267
+
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+  143 argument_list: ',' expression . argument_list
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ','  偏移，並進入狀態 234
+
+    $預設  使用規則 142 以縮減 (argument_list)
+
+    argument_list  進入狀態 297
+
+
+狀態 268
+
+   28 class_declarations: class_modifier CLASS ID class_implements class_implements_list '{' statement '}' .
+
+    $預設  使用規則 28 以縮減 (class_declarations)
+
+
+狀態 269
+
+  110 method_declaration: MAIN '(' ')' '{' statement '}' .
+
+    $預設  使用規則 110 以縮減 (method_declaration)
+
+
+狀態 270
+
+   56 boolean_expr_list: CONNECT_BOOL boolean_expr boolean_expr_list .
+
+    $預設  使用規則 56 以縮減 (boolean_expr_list)
+
+
+狀態 271
+
+   48 condition: IF '(' boolean_expr boolean_expr_list ')' simple_or_compound .
+   49          | IF '(' boolean_expr boolean_expr_list ')' simple_or_compound . ELSE simple_or_compound
+
+    ELSE  偏移，並進入狀態 298
+
+    $預設  使用規則 48 以縮減 (condition)
+
+
+狀態 272
+
+   51 simple_or_compound: compound .
+
+    $預設  使用規則 51 以縮減 (simple_or_compound)
+
+
+狀態 273
+
+   50 simple_or_compound: simple .
+
+    $預設  使用規則 50 以縮減 (simple_or_compound)
+
+
+狀態 274
+
+   79 switch_statement: CASE . const_expr ':' statement BREAK ';' switch_statement
+   80                 | CASE . const_expr ':' statement switch_statement
+
+    REAL_DATA    偏移，並進入狀態 44
+    INT_DATA     偏移，並進入狀態 45
+    STRING_DATA  偏移，並進入狀態 46
+
+    const_expr  進入狀態 299
+
+
+狀態 275
+
+   76 switch_compound: '{' switch_statement . '}'
+   77                | '{' switch_statement . DEFAULT ':' statement '}'
+
+    DEFAULT  偏移，並進入狀態 300
+    '}'      偏移，並進入狀態 301
+
+
+狀態 276
+
+   60 loop: FOR '(' for_init ';' boolean_expr boolean_expr_list . ';' for_update ')' loop_simple_or_compound
+
+    ';'  偏移，並進入狀態 302
+
+
+狀態 277
+
+   69 for_init_assign_list: ',' for_init_assign for_init_assign_list .
+
+    $預設  使用規則 69 以縮減 (for_init_assign_list)
+
+
+狀態 278
+
+   61 loop_condition: IF '(' boolean_expr boolean_expr_list . ')' loop_simple_or_compound
+   62               | IF '(' boolean_expr boolean_expr_list . ')' loop_simple_or_compound ELSE loop_simple_or_compound
+
+    ')'  偏移，並進入狀態 303
+
+
+狀態 279
+
+   59 loop: DO loop_compound WHILE '(' boolean_expr boolean_expr_list . ')' ';'
+
+    ')'  偏移，並進入狀態 304
+
+
+狀態 280
+
+  115 loop_simple: CONTINUE . ';'
+
+    ';'  偏移，並進入狀態 305
+
+
+狀態 281
+
+  116 loop_simple: BREAK . ';'
+
+    ';'  偏移，並進入狀態 306
+
+
+狀態 282
+
+  112 loop_simple: PRINT . '(' expression ')' ';'
+
+    '('  偏移，並進入狀態 307
+
+
+狀態 283
+
+  113 loop_simple: READ . '(' name ')' ';'
+
+    '('  偏移，並進入狀態 308
+
+
+狀態 284
+
+   58 loop: WHILE '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound .
+
+    $預設  使用規則 58 以縮減 (loop)
+
+
+狀態 285
+
+   64 loop_simple_or_compound: loop_compound .
+
+    $預設  使用規則 64 以縮減 (loop_simple_or_compound)
+
+
+狀態 286
+
+   63 loop_simple_or_compound: loop_simple .
+
+    $預設  使用規則 63 以縮減 (loop_simple_or_compound)
+
+
+狀態 287
+
+  111 loop_simple: name . EQUAL expression ';'
+  134 factor: name . postfix
+  139 method_invocation: name . '(' argument ')'
+
+    DOUBLE_OPERATOR  偏移，並進入狀態 116
+    EQUAL            偏移，並進入狀態 309
+    '('              偏移，並進入狀態 118
+
+    postfix  進入狀態 119
+
+
+狀態 288
+
+  114 loop_simple: expression . ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ';'  偏移，並進入狀態 310
+
+
+狀態 289
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter ')' . compound FINALLY compound
+   74                  | TRY compound CATCH '(' parameter ')' . compound
+
+    '{'  偏移，並進入狀態 50
+
+    compound  進入狀態 311
+
+
+狀態 290
+
+   45 array: ID EQUAL NEW . data_type '[' expression ']'
+
+    VOID       偏移，並進入狀態 29
+    INT        偏移，並進入狀態 30
+    FLOAT      偏移，並進入狀態 31
+    DOUBEL     偏移，並進入狀態 32
+    CHAR       偏移，並進入狀態 33
+    BOOLEAN    偏移，並進入狀態 34
+    STRING     偏移，並進入狀態 35
+    EXCEPTION  偏移，並進入狀態 42
+
+    data_type  進入狀態 312
+
+
+狀態 291
+
+   47 array_list: ',' array . array_list
+
+    ','  偏移，並進入狀態 257
+
+    $預設  使用規則 46 以縮減 (array_list)
+
+    array_list  進入狀態 313
+
+
+狀態 292
+
+   36 variable_declarations: ID identifier_declarations ID '(' ')' ';' .
+
+    $預設  使用規則 36 以縮減 (variable_declarations)
+
+
+狀態 293
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter . ')' '{' statement '}'
+
+    ')'  偏移，並進入狀態 314
+
+
+狀態 294
+
+  108 method_declaration: class_modifier data_type ID '(' parameter ')' . '{' statement '}'
+
+    '{'  偏移，並進入狀態 315
+
+
+狀態 295
+
+  109 method_declaration: data_type ID '(' parameter ')' '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 316
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 296
+
+   85 argv_list: ',' argv . argv_list
+
+    ','  偏移，並進入狀態 265
+
+    $預設  使用規則 84 以縮減 (argv_list)
+
+    argv_list  進入狀態 317
+
+
+狀態 297
+
+  143 argument_list: ',' expression argument_list .
+
+    $預設  使用規則 143 以縮減 (argument_list)
+
+
+狀態 298
+
+   49 condition: IF '(' boolean_expr boolean_expr_list ')' simple_or_compound ELSE . simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    prefix              進入狀態 55
+    const_expr          進入狀態 56
+    simple_or_compound  進入狀態 318
+    compound            進入狀態 272
+    simple              進入狀態 273
+    name                進入狀態 66
+    expression          進入狀態 67
+    term                進入狀態 68
+    factor              進入狀態 69
+    method_invocation   進入狀態 70
+
+
+狀態 299
+
+   79 switch_statement: CASE const_expr . ':' statement BREAK ';' switch_statement
+   80                 | CASE const_expr . ':' statement switch_statement
+
+    ':'  偏移，並進入狀態 319
+
+
+狀態 300
+
+   77 switch_compound: '{' switch_statement DEFAULT . ':' statement '}'
+
+    ':'  偏移，並進入狀態 320
+
+
+狀態 301
+
+   76 switch_compound: '{' switch_statement '}' .
+
+    $預設  使用規則 76 以縮減 (switch_compound)
+
+
+狀態 302
+
+   60 loop: FOR '(' for_init ';' boolean_expr boolean_expr_list ';' . for_update ')' loop_simple_or_compound
+
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    ID               偏移，並進入狀態 321
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+
+    prefix      進入狀態 322
+    for_update  進入狀態 323
+
+
+狀態 303
+
+   61 loop_condition: IF '(' boolean_expr boolean_expr_list ')' . loop_simple_or_compound
+   62               | IF '(' boolean_expr boolean_expr_list ')' . loop_simple_or_compound ELSE loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    CONTINUE         偏移，並進入狀態 280
+    BREAK            偏移，並進入狀態 281
+    PRINT            偏移，並進入狀態 282
+    READ             偏移，並進入狀態 283
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    prefix                   進入狀態 55
+    const_expr               進入狀態 56
+    loop_simple_or_compound  進入狀態 324
+    loop_compound            進入狀態 285
+    loop_simple              進入狀態 286
+    name                     進入狀態 287
+    expression               進入狀態 288
+    term                     進入狀態 68
+    factor                   進入狀態 69
+    method_invocation        進入狀態 70
+
+
+狀態 304
+
+   59 loop: DO loop_compound WHILE '(' boolean_expr boolean_expr_list ')' . ';'
+
+    ';'  偏移，並進入狀態 325
+
+
+狀態 305
+
+  115 loop_simple: CONTINUE ';' .
+
+    $預設  使用規則 115 以縮減 (loop_simple)
+
+
+狀態 306
+
+  116 loop_simple: BREAK ';' .
+
+    $預設  使用規則 116 以縮減 (loop_simple)
+
+
+狀態 307
+
+  112 loop_simple: PRINT '(' . expression ')' ';'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 326
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 308
+
+  113 loop_simple: READ '(' . name ')' ';'
+
+    THIS  偏移，並進入狀態 22
+    ID    偏移，並進入狀態 105
+
+    name  進入狀態 327
+
+
+狀態 309
+
+  111 loop_simple: name EQUAL . expression ';'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 328
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 310
+
+  114 loop_simple: expression ';' .
+
+    $預設  使用規則 114 以縮減 (loop_simple)
+
+
+狀態 311
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter ')' compound . FINALLY compound
+   74                  | TRY compound CATCH '(' parameter ')' compound .
+
+    FINALLY  偏移，並進入狀態 329
+
+    $預設  使用規則 74 以縮減 (try_catch_finally)
+
+
+狀態 312
+
+   45 array: ID EQUAL NEW data_type . '[' expression ']'
+
+    '['  偏移，並進入狀態 330
+
+
+狀態 313
+
+   47 array_list: ',' array array_list .
+
+    $預設  使用規則 47 以縮減 (array_list)
+
+
+狀態 314
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter ')' . '{' statement '}'
+
+    '{'  偏移，並進入狀態 331
+
+
+狀態 315
+
+  108 method_declaration: class_modifier data_type ID '(' parameter ')' '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 332
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 316
+
+  109 method_declaration: data_type ID '(' parameter ')' '{' statement . '}'
+
+    '}'  偏移，並進入狀態 333
+
+
+狀態 317
+
+   85 argv_list: ',' argv argv_list .
+
+    $預設  使用規則 85 以縮減 (argv_list)
+
+
+狀態 318
+
+   49 condition: IF '(' boolean_expr boolean_expr_list ')' simple_or_compound ELSE simple_or_compound .
+
+    $預設  使用規則 49 以縮減 (condition)
+
+
+狀態 319
+
+   79 switch_statement: CASE const_expr ':' . statement BREAK ';' switch_statement
+   80                 | CASE const_expr ':' . statement switch_statement
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    CASE     使用規則 86 以縮減 (statement)
+    DEFAULT  使用規則 86 以縮減 (statement)
+    BREAK    使用規則 86 以縮減 (statement)
+    '}'      使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 334
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 320
+
+   77 switch_compound: '{' switch_statement DEFAULT ':' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 335
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 321
+
+   70 for_update: ID . postfix
+
+    DOUBLE_OPERATOR  偏移，並進入狀態 116
+
+    postfix  進入狀態 336
+
+
+狀態 322
+
+   71 for_update: prefix . ID
+
+    ID  偏移，並進入狀態 337
+
+
+狀態 323
+
+   60 loop: FOR '(' for_init ';' boolean_expr boolean_expr_list ';' for_update . ')' loop_simple_or_compound
+
+    ')'  偏移，並進入狀態 338
+
+
+狀態 324
+
+   61 loop_condition: IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound .
+   62               | IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound . ELSE loop_simple_or_compound
+
+    ELSE  偏移，並進入狀態 339
+
+    $預設  使用規則 61 以縮減 (loop_condition)
+
+
+狀態 325
+
+   59 loop: DO loop_compound WHILE '(' boolean_expr boolean_expr_list ')' ';' .
+
+    $預設  使用規則 59 以縮減 (loop)
+
+
+狀態 326
+
+  112 loop_simple: PRINT '(' expression . ')' ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ')'  偏移，並進入狀態 340
+
+
+狀態 327
+
+  113 loop_simple: READ '(' name . ')' ';'
+
+    ')'  偏移，並進入狀態 341
+
+
+狀態 328
+
+  111 loop_simple: name EQUAL expression . ';'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ';'  偏移，並進入狀態 342
+
+
+狀態 329
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter ')' compound FINALLY . compound
+
+    '{'  偏移，並進入狀態 50
+
+    compound  進入狀態 343
+
+
+狀態 330
+
+   45 array: ID EQUAL NEW data_type '[' . expression ']'
+
+    THIS             偏移，並進入狀態 22
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '('              偏移，並進入狀態 51
+
+    prefix             進入狀態 55
+    const_expr         進入狀態 56
+    name               進入狀態 90
+    expression         進入狀態 344
+    term               進入狀態 68
+    factor             進入狀態 69
+    method_invocation  進入狀態 70
+
+
+狀態 331
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter ')' '{' . statement '}'
+
+    error            偏移，並進入狀態 20
+    MAIN             偏移，並進入狀態 21
+    THIS             偏移，並進入狀態 22
+    IF               偏移，並進入狀態 23
+    SWITCH           偏移，並進入狀態 24
+    FOR              偏移，並進入狀態 25
+    DO               偏移，並進入狀態 26
+    WHILE            偏移，並進入狀態 27
+    TRY              偏移，並進入狀態 28
+    VOID             偏移，並進入狀態 29
+    INT              偏移，並進入狀態 30
+    FLOAT            偏移，並進入狀態 31
+    DOUBEL           偏移，並進入狀態 32
+    CHAR             偏移，並進入狀態 33
+    BOOLEAN          偏移，並進入狀態 34
+    STRING           偏移，並進入狀態 35
+    CONST            偏移，並進入狀態 36
+    FINAL            偏移，並進入狀態 37
+    STATIC           偏移，並進入狀態 38
+    PRINT            偏移，並進入狀態 39
+    READ             偏移，並進入狀態 40
+    PUBLIC           偏移，並進入狀態 2
+    PROTECTED        偏移，並進入狀態 3
+    PRIVATE          偏移，並進入狀態 4
+    RETURN           偏移，並進入狀態 41
+    EXCEPTION        偏移，並進入狀態 42
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 47
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 50
+    '('              偏移，並進入狀態 51
+
+    '}'  使用規則 86 以縮減 (statement)
+
+    class_modifier         進入狀態 52
+    data_modifier          進入狀態 53
+    data_type              進入狀態 54
+    prefix                 進入狀態 55
+    const_expr             進入狀態 56
+    variable_declarations  進入狀態 57
+    condition              進入狀態 58
+    compound               進入狀態 59
+    loop                   進入狀態 60
+    try_catch_finally      進入狀態 61
+    switch_case_default    進入狀態 62
+    statement              進入狀態 345
+    method_declaration     進入狀態 64
+    simple                 進入狀態 65
+    name                   進入狀態 66
+    expression             進入狀態 67
+    term                   進入狀態 68
+    factor                 進入狀態 69
+    method_invocation      進入狀態 70
+    return                 進入狀態 71
+
+
+狀態 332
+
+  108 method_declaration: class_modifier data_type ID '(' parameter ')' '{' statement . '}'
+
+    '}'  偏移，並進入狀態 346
+
+
+狀態 333
+
+  109 method_declaration: data_type ID '(' parameter ')' '{' statement '}' .
+
+    $預設  使用規則 109 以縮減 (method_declaration)
+
+
+狀態 334
+
+   79 switch_statement: CASE const_expr ':' statement . BREAK ';' switch_statement
+   80                 | CASE const_expr ':' statement . switch_statement
+
+    CASE   偏移，並進入狀態 274
+    BREAK  偏移，並進入狀態 347
+
+    $預設  使用規則 78 以縮減 (switch_statement)
+
+    switch_statement  進入狀態 348
+
+
+狀態 335
+
+   77 switch_compound: '{' switch_statement DEFAULT ':' statement . '}'
+
+    '}'  偏移，並進入狀態 349
+
+
+狀態 336
+
+   70 for_update: ID postfix .
+
+    $預設  使用規則 70 以縮減 (for_update)
+
+
+狀態 337
+
+   71 for_update: prefix ID .
+
+    $預設  使用規則 71 以縮減 (for_update)
+
+
+狀態 338
+
+   60 loop: FOR '(' for_init ';' boolean_expr boolean_expr_list ';' for_update ')' . loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    CONTINUE         偏移，並進入狀態 280
+    BREAK            偏移，並進入狀態 281
+    PRINT            偏移，並進入狀態 282
+    READ             偏移，並進入狀態 283
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    prefix                   進入狀態 55
+    const_expr               進入狀態 56
+    loop_simple_or_compound  進入狀態 350
+    loop_compound            進入狀態 285
+    loop_simple              進入狀態 286
+    name                     進入狀態 287
+    expression               進入狀態 288
+    term                     進入狀態 68
+    factor                   進入狀態 69
+    method_invocation        進入狀態 70
+
+
+狀態 339
+
+   62 loop_condition: IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound ELSE . loop_simple_or_compound
+
+    THIS             偏移，並進入狀態 22
+    CONTINUE         偏移，並進入狀態 280
+    BREAK            偏移，並進入狀態 281
+    PRINT            偏移，並進入狀態 282
+    READ             偏移，並進入狀態 283
+    DOUBLE_OPERATOR  偏移，並進入狀態 43
+    REAL_DATA        偏移，並進入狀態 44
+    INT_DATA         偏移，並進入狀態 45
+    STRING_DATA      偏移，並進入狀態 46
+    ID               偏移，並進入狀態 89
+    '+'              偏移，並進入狀態 48
+    '-'              偏移，並進入狀態 49
+    '{'              偏移，並進入狀態 83
+    '('              偏移，並進入狀態 51
+
+    prefix                   進入狀態 55
+    const_expr               進入狀態 56
+    loop_simple_or_compound  進入狀態 351
+    loop_compound            進入狀態 285
+    loop_simple              進入狀態 286
+    name                     進入狀態 287
+    expression               進入狀態 288
+    term                     進入狀態 68
+    factor                   進入狀態 69
+    method_invocation        進入狀態 70
+
+
+狀態 340
+
+  112 loop_simple: PRINT '(' expression ')' . ';'
+
+    ';'  偏移，並進入狀態 352
+
+
+狀態 341
+
+  113 loop_simple: READ '(' name ')' . ';'
+
+    ';'  偏移，並進入狀態 353
+
+
+狀態 342
+
+  111 loop_simple: name EQUAL expression ';' .
+
+    $預設  使用規則 111 以縮減 (loop_simple)
+
+
+狀態 343
+
+   73 try_catch_finally: TRY compound CATCH '(' parameter ')' compound FINALLY compound .
+
+    $預設  使用規則 73 以縮減 (try_catch_finally)
+
+
+狀態 344
+
+   45 array: ID EQUAL NEW data_type '[' expression . ']'
+  125 expression: expression . '+' term
+  126           | expression . '-' term
+
+    '+'  偏移，並進入狀態 120
+    '-'  偏移，並進入狀態 121
+    ']'  偏移，並進入狀態 354
+
+
+狀態 345
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter ')' '{' statement . '}'
+
+    '}'  偏移，並進入狀態 355
+
+
+狀態 346
+
+  108 method_declaration: class_modifier data_type ID '(' parameter ')' '{' statement '}' .
+
+    $預設  使用規則 108 以縮減 (method_declaration)
+
+
+狀態 347
+
+   79 switch_statement: CASE const_expr ':' statement BREAK . ';' switch_statement
+
+    ';'  偏移，並進入狀態 356
+
+
+狀態 348
+
+   80 switch_statement: CASE const_expr ':' statement switch_statement .
+
+    $預設  使用規則 80 以縮減 (switch_statement)
+
+
+狀態 349
+
+   77 switch_compound: '{' switch_statement DEFAULT ':' statement '}' .
+
+    $預設  使用規則 77 以縮減 (switch_compound)
+
+
+狀態 350
+
+   60 loop: FOR '(' for_init ';' boolean_expr boolean_expr_list ';' for_update ')' loop_simple_or_compound .
+
+    $預設  使用規則 60 以縮減 (loop)
+
+
+狀態 351
+
+   62 loop_condition: IF '(' boolean_expr boolean_expr_list ')' loop_simple_or_compound ELSE loop_simple_or_compound .
+
+    $預設  使用規則 62 以縮減 (loop_condition)
+
+
+狀態 352
+
+  112 loop_simple: PRINT '(' expression ')' ';' .
+
+    $預設  使用規則 112 以縮減 (loop_simple)
+
+
+狀態 353
+
+  113 loop_simple: READ '(' name ')' ';' .
+
+    $預設  使用規則 113 以縮減 (loop_simple)
+
+
+狀態 354
+
+   45 array: ID EQUAL NEW data_type '[' expression ']' .
+
+    $預設  使用規則 45 以縮減 (array)
+
+
+狀態 355
+
+  107 method_declaration: class_modifier data_modifier data_type ID '(' parameter ')' '{' statement '}' .
+
+    $預設  使用規則 107 以縮減 (method_declaration)
+
+
+狀態 356
+
+   79 switch_statement: CASE const_expr ':' statement BREAK ';' . switch_statement
+
+    CASE  偏移，並進入狀態 274
+
+    $預設  使用規則 78 以縮減 (switch_statement)
+
+    switch_statement  進入狀態 357
+
+
+狀態 357
+
+   79 switch_statement: CASE const_expr ':' statement BREAK ';' switch_statement .
+
+    $預設  使用規則 79 以縮減 (switch_statement)

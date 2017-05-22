@@ -10,7 +10,6 @@ int position = 0; /* char 的位置 */
 int line = 1; /* 當前的行數 */
 int tail = -1; /* hash table 中的最後一個元素 */
 int layer = 0; /* 判斷括號的層數 */
-int newline = 0; /* 判斷是否遇到 end of line */
 int comment = 0; /* 判斷是否是 comment */
 int mistake = 0; /* 判斷是否有錯誤 */
 
@@ -41,7 +40,7 @@ void have_newline();
 num [0-9]
 ch [a-zA-Z_$]
 
-num_int [-+]?{num}+
+num_int [-]?{num}+
 num_real [-]?{num}+[.]{num}+[eE][-+]?{num}+|[-]?{num}+[eE][-+]?{num}+|[-]?{num}+[.]{num}+
 num_real_error [-]?{num}+[.]+{num}+|[-]?{num}+[.]+{num}+[eE][-+]?{num}+|[-]?{num}+[.]+|[-]?[.]+{num}+
 
@@ -117,6 +116,7 @@ protected 	{ push_in_buffer(yyleng, yytext); return PROTECTED; }
 
 return 		{ push_in_buffer(yyleng, yytext); return RETURN; }
 implements	{ push_in_buffer(yyleng, yytext); return IMPLEMENTS; }
+Exception	{ push_in_buffer(yyleng, yytext); return EXCEPTION; }
 
 {bracket}	{ push_in_buffer(yyleng, yytext); check_layer(yytext[0]); return yytext[0]; }
 {punctuation}		{ push_in_buffer(yyleng, yytext); return yytext[0]; }
@@ -133,7 +133,7 @@ implements	{ push_in_buffer(yyleng, yytext); return IMPLEMENTS; }
 {tab}		{ handle_space(yytext); }
 
 {num_int} 	{ push_in_buffer(yyleng, yytext); return INT_DATA; }
-{num_real}	{ push_in_buffer(yyleng, yytext); return REAL_DATA; }
+{num_real}	{ push_in_buffer(yyleng, ""); return REAL_DATA; }
 {num_real_error}	{ push_in_buffer(yyleng, yytext); handle_error("real number error"); }
 {id}		{ push_in_buffer(yyleng, yytext); strcpy(id_name, yytext); return ID; }
 
@@ -212,7 +212,7 @@ void format_str( char* s, int len )
 	int i = 0;
 	for( i=0; i<len-1; i++)
 	{	
-		if( (fs[i] == '\\' && fs[i+1] == '"') || (fs[i] == '\\' && fs[i+1] == '\\') )
+		if( (fs[i] == '\\' && fs[i+1] == '\"') || (fs[i] == '\\' && fs[i+1] == '\\') )
 		{
 			int j = i;
 			for( j = i; j<len-1; j++ )
@@ -224,12 +224,7 @@ void format_str( char* s, int len )
 		}
 	}
 	
-	if( newline == 1 )
-	{
-		sprintf(buffer, "Line: %d: ", line++);
-	}
 	strcat(buffer, fs);
-	newline = 0;
 
 	return ;
 }
@@ -264,26 +259,13 @@ void check_layer( char c )
 void push_in_buffer( int len, char *s )
 {
 	position = position + len;
-	
-	if( newline == 1 )
-	{
-		sprintf(buffer, "Line: %d: ", line);
-		newline = 0;
-	}
-
 	strcat(buffer, s);
 }
 
 /* 處理空白和 Tab */
 void handle_space( char* s )
 {
-	if( newline == 1 )
-	{
-		sprintf(buffer, "Line: %d: ", line);
-	}
-
 	strcat(buffer, s);
-	newline = 0;
 }
 
 void handle_error( char* s )
@@ -296,9 +278,15 @@ void handle_error( char* s )
 /* 處理遇到 End of Line */
 void have_newline()
 {
-	newline = 1;
 	position = 0;
 	line++;
+	/* 清空 buffer */
+	int i;
+	for(i=0; i<MAX_BUFFER; i++)
+	{
+		buffer[i] = '\0';
+	}
+	sprintf(buffer, "Line: %d: ", line);
 }
 
 /* 輸出第幾行和錯誤訊息 */
