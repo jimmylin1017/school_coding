@@ -1,7 +1,11 @@
-#ifndef HEADER_H
-#define HEADER_H
 #include "header.h"
-#endif
+
+string server_ip, client_ip;
+int server_port, client_port;
+int server_sockfd, client_sockfd;
+struct sockaddr_in server_addr, client_addr;
+
+int seq_num, ack_num;
 
 Tcp_pkt server_tcp_pkt_init()
 {

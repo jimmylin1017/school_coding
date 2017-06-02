@@ -32,6 +32,8 @@ bool create_server()
     server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert c string to uint32_t
     server_addr.sin_port = htons(server_port); // convert values between host and network byte order
 
+    DEBUG("server %s : %d\n", inet_ntoa(server_addr.sin_addr), htons(server_addr.sin_port));
+
     if(bind(server_sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
         perror("server_sockfd bind failed: ");
@@ -61,7 +63,7 @@ bool create_client()
     // create UDP socket
     client_sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if(server_sockfd < 0)
+    if(client_sockfd < 0)
     {
         perror("client_sockfd failed: ");
         return false;
@@ -72,4 +74,29 @@ bool create_client()
     client_addr.sin_family = AF_INET;
     client_addr.sin_addr.s_addr = inet_addr(client_ip.c_str()); // convert c string to uint32_t
     client_addr.sin_port = htons(client_port); // convert values between host and network byte order
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert c string to uint32_t
+    server_addr.sin_port = htons(server_port); // convert values between host and network byte order
+
+    DEBUG("client %s : %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
+    DEBUG("server %s : %d\n", inet_ntoa(server_addr.sin_addr), htons(server_addr.sin_port));
+
+    if(bind(client_sockfd, (struct sockaddr *)&client_addr, sizeof(client_addr)) == -1)
+    {
+        perror("client_sockfd bind failed: ");
+        return false;
+    }
+
+    return true;
+}
+
+bool client_connect()
+{
+    Tcp_pkt snd_pkt, rcv_pkt;
+
+    if(client_three_way())
+    {
+
+    }
 }

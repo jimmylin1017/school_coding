@@ -1,13 +1,6 @@
-#ifndef HEADER_H
-#define HEADER_H
-    #include "header.h"
-#endif
-
-#ifndef THREEWAY_H
-#define THREEWAY_H
-    #include "threeway.h"
-#endif
+#include "threeway.h"
 
 bool create_server();
 bool server_listen();
 bool create_client();
+bool client_connect();

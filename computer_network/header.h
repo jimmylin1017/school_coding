@@ -48,12 +48,12 @@ typedef struct tcp_pkt
     unsigned char data[MSS + 1];
 } Tcp_pkt;
 
-static string server_ip, client_ip;
-static int server_port, client_port;
-static int server_sockfd, client_sockfd;
-static struct sockaddr_in server_addr, client_addr;
+extern string server_ip, client_ip;
+extern int server_port, client_port;
+extern int server_sockfd, client_sockfd;
+extern struct sockaddr_in server_addr, client_addr;
 
-static int seq_num, ack_num;
+extern int seq_num, ack_num;
 
 Tcp_pkt server_tcp_pkt_init();
 Tcp_pkt client_tcp_pkt_init();

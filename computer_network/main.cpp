@@ -1,19 +1,11 @@
-#ifndef HEADER_H
-#define HEADER_H
-    #include "header.h"
-#endif
-
-#ifndef TCP_H
-#define TCP_H
-    #include "tcp.h"
-#endif
+#include "tcp.h"
 
 void init()
 {
     server_ip = "192.168.2.4";
     server_port = 12345;
     client_ip = "192.168.2.4";
-    client_port = 12345;
+    client_port = 23456;
 
     cout<<"====Parameter===="<<endl;
     cout<<"The RTT delay = "<<RTT<<" ms"<<endl;
@@ -40,9 +32,35 @@ int main(int argc, char* argv[])
         0
     };
 
+    cout<<htons(INADDR_ANY)<<endl;
+
     init();
-    
-    create_client();
+
+    int choose;
+    cin>>choose;
+
+    if(choose)
+    {
+        if(create_server())
+        {
+            DEBUG("create_server success\n");
+            if(server_listen())
+            {
+                DEBUG("server_listen success\n");
+            }
+        }
+    }
+    else
+    {
+        if(create_client())
+        {
+            DEBUG("create_client success\n");
+            if(client_connect())
+            {
+                DEBUG("client_connect success\n");
+            }
+        }
+    }
 
 /*
     if(argc > 1)
@@ -62,7 +80,7 @@ int main(int argc, char* argv[])
         DEBUG("create_server success\n");
         if(server_listen())
         {
-            DEBUG("create_server success\n");
+            DEBUG("server_listen success\n");
         }
     }
 */
