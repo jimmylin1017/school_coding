@@ -49,6 +49,8 @@ bool server_listen()
     
     snd_pkt = server_tcp_pkt_init();
     socklen_t len = sizeof(client_addr);
+
+    DEBUG("server_listen start\n");
     while (recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
     {
         if(get_syn_flag(rcv_pkt.header))
@@ -70,19 +72,20 @@ bool create_client()
     }
 
     // initialize address
-    memset((char *)&client_addr, '\0', sizeof(client_addr));
-    client_addr.sin_family = AF_INET;
-    client_addr.sin_addr.s_addr = inet_addr(client_ip.c_str()); // convert c string to uint32_t
-    client_addr.sin_port = htons(client_port); // convert values between host and network byte order
+    memset((char *)&from_addr, '\0', sizeof(from_addr));
+    from_addr.sin_family = AF_INET;
+    from_addr.sin_addr.s_addr = inet_addr(from_ip.c_str()); // convert c string to uint32_t
+    from_addr.sin_port = htons(0); // convert values between host and network byte order
 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(server_ip.c_str()); // convert c string to uint32_t
-    server_addr.sin_port = htons(server_port); // convert values between host and network byte order
+    memset((char *)&send_addr, '\0', sizeof(send_addr));
+    send_addr.sin_family = AF_INET;
+    send_addr.sin_addr.s_addr = inet_addr(send_ip.c_str()); // convert c string to uint32_t
+    send_addr.sin_port = htons(send_port); // convert values between host and network byte order
 
-    DEBUG("client %s : %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
-    DEBUG("server %s : %d\n", inet_ntoa(server_addr.sin_addr), htons(server_addr.sin_port));
+    DEBUG("client %s : %d\n", inet_ntoa(from_addr.sin_addr), htons(from_addr.sin_port));
+    DEBUG("server %s : %d\n", inet_ntoa(send_addr.sin_addr), htons(send_addr.sin_port));
 
-    if(bind(client_sockfd, (struct sockaddr *)&client_addr, sizeof(client_addr)) == -1)
+    if(bind(client_sockfd, (struct sockaddr *)&from_addr, sizeof(from_addr)) == -1)
     {
         perror("client_sockfd bind failed: ");
         return false;
@@ -93,10 +96,10 @@ bool create_client()
 
 bool client_connect()
 {
-    Tcp_pkt snd_pkt, rcv_pkt;
-
+    DEBUG("client_connect start\n");
     if(client_three_way())
     {
-
+        return true;
     }
+    return false;
 }

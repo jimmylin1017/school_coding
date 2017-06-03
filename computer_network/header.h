@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include <sys/utsname.h>
+#include <thread>
 
 #include <sys/types.h>
 
@@ -27,6 +27,7 @@ using namespace std;
 #define THRESHOLD 4096
 #define MSS 512
 #define BUFFER_SIZE 10240
+#define LOCALIP "127.0.0.1"
 
 typedef struct header
 {
@@ -48,10 +49,11 @@ typedef struct tcp_pkt
     unsigned char data[MSS + 1];
 } Tcp_pkt;
 
-extern string server_ip, client_ip;
-extern int server_port, client_port;
+extern string server_ip, send_ip, from_ip;
+extern int server_port, send_port, from_port;
 extern int server_sockfd, client_sockfd;
 extern struct sockaddr_in server_addr, client_addr;
+extern struct sockaddr_in send_addr, from_addr;
 
 extern int seq_num, ack_num;
 

@@ -11,7 +11,7 @@ bool server_three_way(Tcp_pkt p)
     printf("Receive a packet(SYN) from %s : %u\n", inet_ntoa(client_addr.sin_addr), rcv_pkt.header.src_port);
     printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
 
-    srand(time(NULL));
+    //srand(time(NULL));
     seq_num = (rand() % 10000) + 1;
 
     snd_pkt.header.seq_num = seq_num;
@@ -43,7 +43,7 @@ bool client_three_way()
     
     socklen_t len = sizeof(server_addr);
 
-    srand(time(NULL));
+    //srand(time(NULL));
     seq_num = ((rand() + 999) % 10000) + 1;
     snd_pkt.header.seq_num = seq_num;
     snd_pkt.header.ack_num = 0;
@@ -51,15 +51,15 @@ bool client_three_way()
 
     cout<<"=====Start the three-way handshake====="<<endl;
 
-    sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&server_addr, len);
+    sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
 
-    printf("Send a packet(SYN) to %s : %u\n", inet_ntoa(server_addr.sin_addr), htons(server_addr.sin_port));
+    printf("Send a packet(SYN) to %s : %u\n", inet_ntoa(send_addr.sin_addr), htons(send_addr.sin_port));
 
-    while(recvfrom(client_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&server_addr, (socklen_t *)&len) != -1)
+    while(recvfrom(client_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&send_addr, (socklen_t *)&len) != -1)
     {
         if(get_syn_flag(rcv_pkt.header) && get_ack_flag(rcv_pkt.header))
         {
-            printf("Receive a packet(SYN/ACK) from %s : %u\n", inet_ntoa(server_addr.sin_addr), rcv_pkt.header.src_port);
+            printf("Receive a packet(SYN/ACK) from %s : %u\n", inet_ntoa(send_addr.sin_addr), rcv_pkt.header.src_port);
             printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
 
             break;
@@ -70,9 +70,9 @@ bool client_three_way()
     snd_pkt.header.ack_num = rcv_pkt.header.seq_num + 1;
     snd_pkt.header.flag = 16; // ack = 16
 
-    sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&server_addr, len);
+    sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
 
-    printf("Send a packet(ACK) to %s : %u\n", inet_ntoa(server_addr.sin_addr), htons(server_addr.sin_port));
+    printf("Send a packet(ACK) to %s : %u\n", inet_ntoa(send_addr.sin_addr), htons(send_addr.sin_port));
 
     return true;
 }

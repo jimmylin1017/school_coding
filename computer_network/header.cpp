@@ -1,9 +1,10 @@
 #include "header.h"
 
-string server_ip, client_ip;
-int server_port, client_port;
+string server_ip, send_ip, from_ip;
+int server_port, send_port, from_port;
 int server_sockfd, client_sockfd;
 struct sockaddr_in server_addr, client_addr;
+struct sockaddr_in send_addr, from_addr;
 
 int seq_num, ack_num;
 
@@ -20,7 +21,7 @@ Tcp_pkt client_tcp_pkt_init()
 {
     Tcp_pkt p;
     memset(p.data, 0, sizeof(p.data));
-    p.header.src_port = client_port;
+    p.header.src_port = from_port;
 
     return p;
 }
