@@ -1,7 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <string>
 #include <cstring>
 #include <ctime>
 
@@ -24,10 +23,11 @@ using namespace std;
 #endif
 
 #define RTT 200
-#define THRESHOLD 4096
+#define THRESHOLD 65535
 #define MSS 512
 #define BUFFER_SIZE 10240
 #define LOCALIP "127.0.0.1"
+#define FILE_SIZE 10240
 
 typedef struct header
 {
@@ -49,13 +49,21 @@ typedef struct tcp_pkt
     unsigned char data[MSS + 1];
 } Tcp_pkt;
 
+/**********
+
+server: server_ip, server_port, server_sockfd, server_addr, client_addr
+
+client: send_ip, from_ip, send_port, from_port, client_sockfd, send_addr, from_addr
+
+**********/
 extern string server_ip, send_ip, from_ip;
 extern int server_port, send_port, from_port;
 extern int server_sockfd, client_sockfd;
 extern struct sockaddr_in server_addr, client_addr;
 extern struct sockaddr_in send_addr, from_addr;
 
-extern int seq_num, ack_num;
+extern int server_seq_num, server_ack_num;
+extern int client_seq_num, client_ack_num;
 
 Tcp_pkt server_tcp_pkt_init();
 Tcp_pkt client_tcp_pkt_init();

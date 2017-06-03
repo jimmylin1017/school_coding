@@ -25,7 +25,7 @@ void run_server()
         if(server_listen())
         {
             DEBUG("server_listen success\n");
-        }
+        }   
     }
 }
 
@@ -65,6 +65,11 @@ int main(int argc, char* argv[])
     if(argc > 1)
     {
         init(atoi(argv[argc-1]));
+    }
+    else
+    {
+        cout<<"Please input port"<<endl;
+        exit(1);
     }
 
     thread server_thread(run_server);

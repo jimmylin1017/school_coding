@@ -6,7 +6,8 @@ int server_sockfd, client_sockfd;
 struct sockaddr_in server_addr, client_addr;
 struct sockaddr_in send_addr, from_addr;
 
-int seq_num, ack_num;
+int server_seq_num, server_ack_num;
+int client_seq_num, client_ack_num;
 
 Tcp_pkt server_tcp_pkt_init()
 {

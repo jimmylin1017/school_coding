@@ -12,11 +12,11 @@ bool server_three_way(Tcp_pkt p)
     printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
 
     //srand(time(NULL));
-    seq_num = (rand() % 10000) + 1;
+    server_seq_num = (rand() % 10000) + 1;
 
-    snd_pkt.header.seq_num = seq_num;
+    snd_pkt.header.seq_num = server_seq_num;
     snd_pkt.header.ack_num = rcv_pkt.header.seq_num + 1;
-    snd_pkt.header.flag = 18; // ack = 16 + syn = 2
+    snd_pkt.header.flag = 18; // syn = 2 + ack = 16
 
     sendto(server_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&client_addr, len);
 
@@ -28,6 +28,7 @@ bool server_three_way(Tcp_pkt p)
         {
             printf("Receive a packet(SYN) from %s : %u\n", inet_ntoa(client_addr.sin_addr), rcv_pkt.header.src_port);
             printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+            server_ack_num = rcv_pkt.header.seq_num + 1;
 
             return true;
         }
@@ -44,8 +45,8 @@ bool client_three_way()
     socklen_t len = sizeof(server_addr);
 
     //srand(time(NULL));
-    seq_num = ((rand() + 999) % 10000) + 1;
-    snd_pkt.header.seq_num = seq_num;
+    client_seq_num = ((rand() + 999) % 10000) + 1;
+    snd_pkt.header.seq_num = client_seq_num;
     snd_pkt.header.ack_num = 0;
     snd_pkt.header.flag = 2; // syn = 2
 
@@ -57,6 +58,7 @@ bool client_three_way()
 
     while(recvfrom(client_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&send_addr, (socklen_t *)&len) != -1)
     {
+        DEBUG("client recvfrom\n");
         if(get_syn_flag(rcv_pkt.header) && get_ack_flag(rcv_pkt.header))
         {
             printf("Receive a packet(SYN/ACK) from %s : %u\n", inet_ntoa(send_addr.sin_addr), rcv_pkt.header.src_port);
@@ -66,7 +68,7 @@ bool client_three_way()
         }
     }
 
-    snd_pkt.header.seq_num = ++seq_num;
+    snd_pkt.header.seq_num = ++client_seq_num;
     snd_pkt.header.ack_num = rcv_pkt.header.seq_num + 1;
     snd_pkt.header.flag = 16; // ack = 16
 
