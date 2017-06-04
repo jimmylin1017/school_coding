@@ -12,6 +12,7 @@ bool server_send_data()
 
     int cwnd = 1, rwnd = BUFFER_SIZE;
     int send_byte_index = 1, need_send_byte = 0, send_byte = 0, send_packet = 0, receive_packet = 0;
+    int total_send_packet = 0, total_receive_packet = 0;
 
     Tcp_pkt snd_pkt, rcv_pkt;
 
@@ -57,15 +58,18 @@ bool server_send_data()
             file_size -= send_byte;
             rwnd -= send_byte;
             send_packet++;
+            total_send_packet++;
         }
-        
+
         receive_packet = 0;
         while(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
         {
             if(get_ack_flag(rcv_pkt.header))
             {
-                printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+                if(total_receive_packet % 2 == 1)
+                    printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
                 receive_packet++;
+                total_receive_packet++;
             }
 
             if(receive_packet != 0 && receive_packet == send_packet)
