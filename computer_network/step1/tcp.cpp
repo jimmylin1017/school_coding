@@ -61,13 +61,13 @@ bool server_listen()
 
     server_send_data();
 
-    /*while (recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+    while(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
     {
         if(get_fin_flag(rcv_pkt.header))
         {
-            
+            if(server_four_way(rcv_pkt)) break;
         }
-    }*/
+    }
 }
 
 bool create_client()
@@ -111,7 +111,8 @@ bool client_connect()
     {
         if(client_receive_data())
         {
-            return true;
+            if(client_four_way())
+                return true;
         }
     }
     return false;

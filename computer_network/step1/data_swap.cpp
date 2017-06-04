@@ -68,11 +68,19 @@ bool server_send_data()
                 receive_packet++;
             }
 
-            if(receive_packet != 0 && receive_packet == send_packet) break;
+            if(receive_packet != 0 && receive_packet == send_packet)
+            {
+                break;
+            }
         }
 
         cwnd *= 2;
     }
+
+    DEBUG("server_send_data finish\n");
+
+    server_ack_num = snd_pkt.header.ack_num + 1;
+    server_seq_num = snd_pkt.header.seq_num;
 
     return true;
 }
@@ -102,19 +110,36 @@ bool client_receive_data()
         receive_byte = receive_byte + strlen((char*)rcv_pkt.data);
         before_seq_num = rcv_pkt.header.seq_num;
 
-        snd_pkt.header.seq_num = ++client_seq_num;
+        /*snd_pkt.header.seq_num = ++client_seq_num;
         snd_pkt.header.ack_num = receive_byte + 1;
         snd_pkt.header.flag = 16; // ack = 16
 
-        if(receive_byte < BUFFER_SIZE)
+        sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
+        send_packet++;*/
+
+        if(receive_byte + 1 <= BUFFER_SIZE)
         {
+            snd_pkt.header.seq_num = ++client_seq_num;
+            snd_pkt.header.ack_num = receive_byte + 1;
+            snd_pkt.header.flag = 16; // ack = 16
+
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
             send_packet++;
         }
+        else if(receive_byte + 1 > BUFFER_SIZE)
+        {
+            DEBUG("client_receive_data finish\n");
 
-        if(receive_byte == BUFFER_SIZE) return true;
-        
+            snd_pkt.header.seq_num = ++client_seq_num;
+            snd_pkt.header.flag = 16; // ack = 16
+
+            sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
+            send_packet++;
+            break;
+        }
     }
 
-    return false;
+    client_ack_num = snd_pkt.header.ack_num + 1;
+
+    return true;
 }

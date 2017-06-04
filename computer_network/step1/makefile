@@ -1,5 +1,5 @@
 # source file
-SRCS = main.cpp header.cpp tcp.cpp threeway.cpp data_swap.cpp
+SRCS = main.cpp header.cpp tcp.cpp threeway.cpp data_swap.cpp fourway.cpp
 # source file format [.cpp]
 SRCF  = .cpp
 # convert source file format to [.o]
