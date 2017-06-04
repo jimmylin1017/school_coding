@@ -62,17 +62,16 @@ bool server_send_data()
         }
 
         receive_packet = 0;
-        while(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+        while(total_send_packet % 2 == 0 && recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
         {
             if(get_ack_flag(rcv_pkt.header))
             {
-                if(total_receive_packet % 2 == 1)
-                    printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+                printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
                 receive_packet++;
                 total_receive_packet++;
             }
 
-            if(receive_packet != 0 && receive_packet == send_packet)
+            if(send_packet == receive_packet || send_packet / 2 == receive_packet)
             {
                 break;
             }
@@ -94,7 +93,7 @@ bool client_receive_data()
     int file_size = FILE_SIZE; // bytes
 
     int cwnd = 1, rwnd = BUFFER_SIZE;
-    int before_seq_num = 0, receive_byte = 0, send_packet = 0, receive_packet = 0;
+    int before_seq_num = 0, receive_byte = 0, total_send_packet = 0, total_receive_packet = 0;
 
     Tcp_pkt snd_pkt, rcv_pkt;
 
@@ -105,8 +104,8 @@ bool client_receive_data()
    
     while(recvfrom(client_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&send_addr, (socklen_t *)&len) != -1)
     {
-        receive_packet++;
-        if(receive_packet == 1)
+        total_receive_packet++;
+        if(total_receive_packet == 1)
             printf("Receive a file from %s : %u\n", inet_ntoa(send_addr.sin_addr), rcv_pkt.header.src_port);
 
         printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
@@ -114,21 +113,14 @@ bool client_receive_data()
         receive_byte = receive_byte + strlen((char*)rcv_pkt.data);
         before_seq_num = rcv_pkt.header.seq_num;
 
-        /*snd_pkt.header.seq_num = ++client_seq_num;
-        snd_pkt.header.ack_num = receive_byte + 1;
-        snd_pkt.header.flag = 16; // ack = 16
-
-        sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
-        send_packet++;*/
-
-        if(receive_byte + 1 <= BUFFER_SIZE)
+        if(receive_byte + 1 <= BUFFER_SIZE && total_receive_packet % 2 == 1)
         {
             snd_pkt.header.seq_num = ++client_seq_num;
             snd_pkt.header.ack_num = receive_byte + 1;
             snd_pkt.header.flag = 16; // ack = 16
 
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
-            send_packet++;
+            total_send_packet++;
         }
         else if(receive_byte + 1 > BUFFER_SIZE)
         {
@@ -138,7 +130,7 @@ bool client_receive_data()
             snd_pkt.header.flag = 16; // ack = 16
 
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
-            send_packet++;
+            total_send_packet++;
             break;
         }
     }
