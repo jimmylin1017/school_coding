@@ -55,9 +55,19 @@ bool server_listen()
     {
         if(get_syn_flag(rcv_pkt.header))
         {
-            if(server_three_way(rcv_pkt)) return true;
+            if(server_three_way(rcv_pkt)) break;
         }
     }
+
+    server_send_data();
+
+    /*while (recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+    {
+        if(get_fin_flag(rcv_pkt.header))
+        {
+            
+        }
+    }*/
 }
 
 bool create_client()
@@ -99,7 +109,10 @@ bool client_connect()
     DEBUG("client_connect start\n");
     if(client_three_way())
     {
-        return true;
+        if(client_receive_data())
+        {
+            return true;
+        }
     }
     return false;
 }

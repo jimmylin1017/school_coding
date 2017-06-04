@@ -8,4 +8,4 @@ static bool congestion_avoidance;
 
 void send_init();
 bool server_send_data();
-bool server_reveive_data();
+bool client_receive_data(); 

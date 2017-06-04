@@ -46,7 +46,7 @@ typedef struct header
 typedef struct tcp_pkt
 {
     Header header;
-    unsigned char data[MSS + 1];
+    unsigned char data[MSS];
 } Tcp_pkt;
 
 /**********

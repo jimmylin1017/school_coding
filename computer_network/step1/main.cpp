@@ -49,8 +49,9 @@ int main(int argc, char* argv[])
     string ip;
     int sockfd;
 
-    srand(time(NULL));
+    srand(time(NULL)); // use for random sequence num
 
+    // test for header structure
     Header h = {
         0,0,
         0,

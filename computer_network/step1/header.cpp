@@ -12,7 +12,7 @@ int client_seq_num, client_ack_num;
 Tcp_pkt server_tcp_pkt_init()
 {
     Tcp_pkt p;
-    memset(p.data, 0, sizeof(p.data));
+    memset(p.data, '\0', sizeof(p.data));
     p.header.src_port = server_port;
 
     return p;
@@ -21,7 +21,7 @@ Tcp_pkt server_tcp_pkt_init()
 Tcp_pkt client_tcp_pkt_init()
 {
     Tcp_pkt p;
-    memset(p.data, 0, sizeof(p.data));
+    memset(p.data, '\0', sizeof(p.data));
     p.header.src_port = from_port;
 
     return p;
