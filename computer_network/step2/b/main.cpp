@@ -2,9 +2,9 @@
 
 void init(int port)
 {
-    server_ip = LOCALIP;
+    server_ip = nat_map[LOCALIP];
     server_port = port;
-    from_ip = LOCALIP;
+    from_ip = nat_map[LOCALIP];
     from_port = port;
 
     cout<<"====Parameter===="<<endl;
@@ -12,7 +12,7 @@ void init(int port)
     cout<<"The threshold = "<<THRESHOLD<<" bytes"<<endl;
     cout<<"The MSS = "<<MSS<<" bytes"<<endl;
     cout<<"The buffer size = "<<BUFFER_SIZE<<" bytes"<<endl;
-    cout<<"Server's IP is "<<server_ip<<endl;
+    cout<<"Server's IP is "<<LOCALIP<<endl;
     cout<<"Server is listening on port "<<server_port<<endl;
     cout<<"==============="<<endl;
 }
@@ -33,6 +33,7 @@ void run_client()
 {
     cout<<"(ClientFunction)Please Input Node [IP] [Port] you want to connect"<<endl;
     cin>>send_ip>>send_port;
+    send_ip = nat_map[send_ip];
     if(create_client())
     {
         DEBUG("create_client success\n");
@@ -50,6 +51,7 @@ int main(int argc, char* argv[])
     int sockfd;
 
     srand(time(NULL)); // use for random sequence num
+    nat_map_init();
 
     // test for header structure
     Header h = {

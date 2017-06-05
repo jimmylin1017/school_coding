@@ -9,6 +9,8 @@ struct sockaddr_in send_addr, from_addr;
 int server_seq_num, server_ack_num;
 int client_seq_num, client_ack_num;
 
+map<string, string> nat_map;
+
 Tcp_pkt server_tcp_pkt_init()
 {
     Tcp_pkt p;
@@ -45,4 +47,11 @@ bool get_rts_flag(Header h)
 bool get_ack_flag(Header h)
 {
     return (h.flag) & 16 ? true : false;
+}
+
+void nat_map_init()
+{
+    nat_map["127.0.0.1"] = "127.0.0.1";
+    nat_map["192.168.0.1"] = "127.0.0.1";
+    nat_map["192.168.0.2"] = "127.0.0.1";
 }

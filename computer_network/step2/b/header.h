@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cstring>
 #include <ctime>
+#include <map>
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -26,7 +27,7 @@ using namespace std;
 #define THRESHOLD 65535
 #define MSS 512
 #define BUFFER_SIZE 10240
-#define LOCALIP "127.0.0.1"
+#define LOCALIP "192.168.0.2"
 #define FILE_SIZE 10240
 
 typedef struct header
@@ -65,9 +66,12 @@ extern struct sockaddr_in send_addr, from_addr;
 extern int server_seq_num, server_ack_num;
 extern int client_seq_num, client_ack_num;
 
+extern map<string, string> nat_map;
+
 Tcp_pkt server_tcp_pkt_init();
 Tcp_pkt client_tcp_pkt_init();
 bool get_fin_flag(Header h);
 bool get_syn_flag(Header h);
 bool get_rts_flag(Header h);
 bool get_ack_flag(Header h);
+void nat_map_init();
