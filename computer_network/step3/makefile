@@ -9,9 +9,9 @@ EXEC = main
 # compiler
 CXX  = g++
 # compile flag with debug
-CXXFLAGS = -std=c++11 -ggdb -pthread -D _DEBUG
+#CXXFLAGS = -std=c++11 -ggdb -pthread -D _DEBUG
 # compile flag c++11 and gdb
-#CXXFLAGS = -std=c++11 -ggdb
+CXXFLAGS = -std=c++11 -ggdb -pthread
 
 all: $(EXEC) clean
 

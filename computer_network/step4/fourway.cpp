@@ -38,6 +38,7 @@ bool server_four_way(Tcp_pkt p)
             printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
             server_ack_num = rcv_pkt.header.seq_num + 1;
 
+            close(server_sockfd);
             cout<<"=====Complete the four-way handshake====="<<endl;
 
             return true;
@@ -94,6 +95,7 @@ bool client_four_way()
 
     printf("Send a packet(ACK) to %s : %u\n", inet_ntoa(send_addr.sin_addr), htons(send_addr.sin_port));
 
+    close(client_sockfd);
     cout<<"=====Complete the four-way handshake====="<<endl;
 
     return true;

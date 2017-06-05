@@ -9,12 +9,11 @@ void send_init()
 bool server_send_data()
 {
     send_init();
-
+    
     int file_size = FILE_SIZE; // bytes
 
     int cwnd = 1, rwnd = BUFFER_SIZE;
     int send_byte_index = 1, need_send_byte = 0, send_byte = 0, send_packet = 0, receive_packet = 0;
-    int total_send_packet = 0, total_receive_packet = 0;
 
     Tcp_pkt snd_pkt, rcv_pkt;
 
@@ -30,12 +29,12 @@ bool server_send_data()
     snd_pkt.header.ack_num = server_ack_num;
     snd_pkt.header.flag = 0;
 
-    while(file_size > 0)
+    while(rwnd > 0 && file_size > 0)
     {
         printf("cwnd = %d, rwnd = %d, threshold = %d\n", cwnd, rwnd, THRESHOLD);
-        need_send_byte = cwnd;
+        need_send_byte = min(cwnd, file_size);
         send_packet = 0;
-        while(need_send_byte > 0 && file_size > 0)
+        while(rwnd > 0 && need_send_byte > 0 && file_size > 0)
         {
             //DEBUG("need_send_byte : %d\n", need_send_byte);
 
@@ -46,7 +45,6 @@ bool server_send_data()
 
             need_send_byte -= send_byte;
 
-            // setting data
             memset(snd_pkt.data, '\0', sizeof(snd_pkt.data));
             for(int i=0; i<send_byte; i++)
                 snd_pkt.data[i] = 'A';
@@ -61,21 +59,19 @@ bool server_send_data()
             file_size -= send_byte;
             rwnd -= send_byte;
             send_packet++;
-            total_send_packet++;
         }
-
+        
         receive_packet = 0;
         while(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
         {
             if(get_ack_flag(rcv_pkt.header))
             {
-                if(total_receive_packet % 2 == 1)
-                    printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+                printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+                rwnd = BUFFER_SIZE - rcv_pkt.header.window_size;
                 receive_packet++;
-                total_receive_packet++;
             }
 
-            if(receive_packet != 0 && receive_packet == send_packet)
+            if(receive_packet == send_packet)
             {
                 break;
             }
@@ -135,6 +131,7 @@ bool client_receive_data()
             snd_pkt.header.seq_num = ++client_seq_num;
             snd_pkt.header.ack_num = receive_byte + 1;
             snd_pkt.header.flag = 16; // ack = 16
+            snd_pkt.header.window_size = receive_byte;
 
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
             send_packet++;
@@ -144,6 +141,7 @@ bool client_receive_data()
             DEBUG("client_receive_data finish\n");
 
             snd_pkt.header.seq_num = ++client_seq_num;
+            snd_pkt.header.ack_num = receive_byte + 1;
             snd_pkt.header.flag = 16; // ack = 16
 
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);

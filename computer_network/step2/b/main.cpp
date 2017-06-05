@@ -34,6 +34,7 @@ void run_client()
     cout<<"(ClientFunction)Please Input Node [IP] [Port] you want to connect"<<endl;
     cin>>send_ip>>send_port;
     send_ip = nat_map[send_ip];
+    
     if(create_client())
     {
         DEBUG("create_client success\n");

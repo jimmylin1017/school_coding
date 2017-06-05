@@ -25,9 +25,9 @@ using namespace std;
 #define RTT 200
 #define THRESHOLD 4096
 #define MSS 512
-#define BUFFER_SIZE 10240
+#define BUFFER_SIZE 10241
 #define LOCALIP "127.0.0.1"
-#define FILE_SIZE 10240
+#define FILE_SIZE 10241
 
 typedef struct header
 {

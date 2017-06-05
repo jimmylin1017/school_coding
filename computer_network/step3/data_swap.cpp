@@ -13,6 +13,7 @@ bool server_send_data()
     int cwnd = 1, rwnd = BUFFER_SIZE;
     int send_byte_index = 1, need_send_byte = 0, send_byte = 0, send_packet = 0, receive_packet = 0;
     int total_send_packet = 0, total_receive_packet = 0;
+    int delay_reveice_ack = 0;
 
     Tcp_pkt snd_pkt, rcv_pkt;
 
@@ -28,12 +29,12 @@ bool server_send_data()
     snd_pkt.header.ack_num = server_ack_num;
     snd_pkt.header.flag = 0;
 
-    while(file_size > 0)
+    while(rwnd > 0 && file_size > 0)
     {
         printf("cwnd = %d, rwnd = %d, threshold = %d\n", cwnd, rwnd, THRESHOLD);
-        need_send_byte = cwnd;
+        need_send_byte = min(cwnd, file_size);
         send_packet = 0;
-        while(need_send_byte > 0 && file_size > 0)
+        while(rwnd > 0 && need_send_byte > 0 && file_size > 0)
         {
             //DEBUG("need_send_byte : %d\n", need_send_byte);
 
@@ -59,16 +60,19 @@ bool server_send_data()
             rwnd -= send_byte;
             send_packet++;
             total_send_packet++;
+            if(total_send_packet % 2 == 0) delay_reveice_ack++;
         }
 
         receive_packet = 0;
-        while(total_send_packet % 2 == 0 && recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+        while(delay_reveice_ack > 0 && recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
         {
             if(get_ack_flag(rcv_pkt.header))
             {
                 printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
+                rwnd = BUFFER_SIZE - rcv_pkt.header.window_size;
                 receive_packet++;
                 total_receive_packet++;
+                delay_reveice_ack--;
             }
 
             if(send_packet == receive_packet || send_packet / 2 == receive_packet)
@@ -113,11 +117,12 @@ bool client_receive_data()
         receive_byte = receive_byte + strlen((char*)rcv_pkt.data);
         before_seq_num = rcv_pkt.header.seq_num;
 
-        if(receive_byte + 1 <= BUFFER_SIZE && total_receive_packet % 2 == 1)
+        if(receive_byte + 1 <= BUFFER_SIZE && total_receive_packet % 2 == 0)
         {
             snd_pkt.header.seq_num = ++client_seq_num;
             snd_pkt.header.ack_num = receive_byte + 1;
             snd_pkt.header.flag = 16; // ack = 16
+            snd_pkt.header.window_size = receive_byte;
 
             sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
             total_send_packet++;
