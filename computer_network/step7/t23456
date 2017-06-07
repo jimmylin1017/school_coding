@@ -1,0 +1,84 @@
+0
+====Parameter====
+The RTT delay = 200 ms
+The threshold = 4096 bytes
+The MSS = 512 bytes
+The buffer size = 10241 bytes
+Server's IP is 127.0.0.1
+Server is listening on port 23456
+===============
+(ClientFunction)Please Input Node [IP] [Port] you want to connect
+=====Start the three-way handshake=====
+Receive a packet(SYN) from 127.0.0.1 : 12345
+	Receive a packet (seq_num = 3500, ack_num = 0)
+Send a packet(SYN/ACK) to 127.0.0.1 : 12345
+Receive a packet(SYN) from 127.0.0.1 : 12345
+	Receive a packet (seq_num = 3501, ack_num = 7210)
+=====Complete the three-way handshake=====
+Start to send the file, the file size is 10241 bytes.
+*****Slow start*****
+cwnd = 1, rwnd = 10241, threshold = 4096
+	Send a packet at : 1 byte
+	Receive a packet (seq_num = 3502, ack_num = 2)
+cwnd = 2, rwnd = 10240, threshold = 4096
+	Send a packet at : 2 byte
+	Receive a packet (seq_num = 3503, ack_num = 4)
+cwnd = 4, rwnd = 10238, threshold = 4096
+	Send a packet at : 4 byte
+	Receive a packet (seq_num = 3504, ack_num = 8)
+cwnd = 8, rwnd = 10234, threshold = 4096
+	Send a packet at : 8 byte
+	Receive a packet (seq_num = 3505, ack_num = 16)
+cwnd = 16, rwnd = 10226, threshold = 4096
+	Send a packet at : 16 byte
+	Receive a packet (seq_num = 3506, ack_num = 32)
+cwnd = 32, rwnd = 10210, threshold = 4096
+	Send a packet at : 32 byte
+	Receive a packet (seq_num = 3507, ack_num = 64)
+cwnd = 64, rwnd = 10178, threshold = 4096
+	Send a packet at : 64 byte
+	Receive a packet (seq_num = 3508, ack_num = 128)
+cwnd = 128, rwnd = 10114, threshold = 4096
+	Send a packet at : 128 byte
+	Receive a packet (seq_num = 3509, ack_num = 256)
+cwnd = 256, rwnd = 9986, threshold = 4096
+	Send a packet at : 256 byte
+	Receive a packet (seq_num = 3510, ack_num = 512)
+cwnd = 512, rwnd = 9730, threshold = 4096
+	Send a packet at : 512 byte
+	Receive a packet (seq_num = 3511, ack_num = 1024)
+cwnd = 1024, rwnd = 9218, threshold = 4096
+	Send a packet at : 1024 byte
+	Send a packet at : 1536 byte
+	Receive a packet (seq_num = 3512, ack_num = 1536)
+	Receive a packet (seq_num = 3513, ack_num = 2048)
+cwnd = 2048, rwnd = 8194, threshold = 4096
+	Send a packet at : 2048 byte
+	Send a packet at : 2560 byte
+	Send a packet at : 3072 byte
+	Send a packet at : 3584 byte
+	Receive a packet (seq_num = 3514, ack_num = 2560)
+	Receive a packet (seq_num = 3515, ack_num = 3072)
+	Receive a packet (seq_num = 3516, ack_num = 3584)
+	Receive a packet (seq_num = 3517, ack_num = 4096)
+*****Congestion avoidance*****
+cwnd = 4096, rwnd = 6146, threshold = 4096
+	Send a packet at : 4096 byte
+	Send a packet at : 4608 byte
+	Send a packet at : 5120 byte
+***loss at 5120 byte***
+	Send a packet at : 5632 byte
+	Send a packet at : 6144 byte
+***loss at 6144 byte***
+	Send a packet at : 6656 byte
+	Send a packet at : 7168 byte
+***loss at 7168 byte***
+	Send a packet at : 7680 byte
+	Receive a packet (seq_num = 3518, ack_num = 4608)
+	Receive a packet (seq_num = 3519, ack_num = 5120)
+	Receive a packet (seq_num = 3520, ack_num = 5120)
+	Receive a packet (seq_num = 3521, ack_num = 5120)
+	Receive a packet (seq_num = 3522, ack_num = 5120)
+Receive three duplicate ACKs
+*****Fast recovery*****
+*****Congestion avoidance*****

@@ -15,6 +15,7 @@ bool server_send_data()
     int cwnd = 1, rwnd = BUFFER_SIZE, threshold = THRESHOLD;
     int send_byte_index = 1, need_send_byte = 0, send_byte = 0;
     int send_packet = 0, receive_packet = 0;
+    int start = 1;
     
     // check dup_ack
     int dup_ack = 0, loss_packet = 2048;
@@ -53,6 +54,7 @@ bool server_send_data()
             
             snd_pkt.header.seq_num = send_byte_index;
             snd_pkt.header.ack_num += 1;
+            DEBUG("send index %d %d\n", send_byte_index, file_size);
 
             if(loss_packet == send_byte_index)
             {
@@ -114,6 +116,7 @@ bool server_send_data()
 
         if(dup_ack)
         {
+            dup_ack = 0;
             cout<<"Receive three duplicate ACKs"<<endl;
             cout<<"*****Fast recovery*****"<<endl;
             cout<<"*****Congestion avoidance*****"<<endl;
@@ -123,7 +126,6 @@ bool server_send_data()
             slow_start = false;
             congestion_avoidance = true;
             send_byte_index = rcv_pkt.header.ack_num;
-            dup_ack = 0;
             DEBUG("find dup_ack\nfile_size %d\n", file_size);
             continue;
         }
