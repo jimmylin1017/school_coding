@@ -15,8 +15,10 @@ bool server_send_data()
     int cwnd = 1, rwnd = BUFFER_SIZE, threshold = THRESHOLD;
     int send_byte_index = 1, need_send_byte = 0, send_byte = 0;
     int send_packet = 0, receive_packet = 0;
-    int total_send_packet = 0, total_receive_packet = 0;
-    int delay_reveice_ack = 0;
+    
+    // check dup_ack
+    int dup_ack = 0, loss_packet = 2560;
+    map<int, int> dup_map;
 
     Tcp_pkt snd_pkt, rcv_pkt;
 
@@ -52,43 +54,78 @@ bool server_send_data()
             snd_pkt.header.seq_num = send_byte_index;
             snd_pkt.header.ack_num += 1;
 
-            sendto(server_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&client_addr, len);
-            printf("\tSend a packet at : %d byte\n", send_byte_index);
+            if(loss_packet == send_byte_index)
+            {
+                loss_packet = 0;
+                printf("\tSend a packet at : %d byte\n***loss at %d byte***\n", send_byte_index, send_byte_index);
+            }
+            else
+            {
+                sendto(server_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&client_addr, len);
+                printf("\tSend a packet at : %d byte\n", send_byte_index);
+            }
+
+            if(dup_map.find(send_byte_index) != dup_map.end())
+            {
+                dup_map[send_byte_index] = 0;
+            }
+            else
+            {
+                dup_map.insert(pair<int, int>(send_byte_index, 0));
+            }
 
             send_packet++;
-            total_send_packet++;
-            if(total_send_packet % 2 == 0) delay_reveice_ack++;
-
             send_byte_index += send_byte;
             file_size -= send_byte;
             rwnd -= send_byte;
         }
 
         receive_packet = 0;
-        while(delay_reveice_ack > 0 && recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+        while(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
         {
             if(get_ack_flag(rcv_pkt.header))
             {
                 printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
                 rwnd = BUFFER_SIZE - rcv_pkt.header.window_size;
                 receive_packet++;
-                total_receive_packet++;
-                delay_reveice_ack--;
+
+                // check dup_ack
+                if(dup_map.find(rcv_pkt.header.ack_num) != dup_map.end())
+                {
+                    dup_map[rcv_pkt.header.ack_num]++;
+                }
+                else
+                {
+                    dup_map.insert(pair<int, int>(rcv_pkt.header.ack_num, 1));
+                }
+
+                if(dup_map[rcv_pkt.header.ack_num] == 3)
+                {
+                    dup_ack = 1;
+                    DEBUG("find dup_ack %d\n", rcv_pkt.header.ack_num);
+                }
 
                 send_byte_index = rcv_pkt.header.ack_num;
             }
 
-            if(receive_packet == send_packet || send_packet / 2 == receive_packet)
+            if(receive_packet == send_packet || dup_ack)
                 break;
         }
 
-        if(file_size == 0 && rwnd > 0)
+        if(dup_ack)
         {
-            if(recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
-            {
-                printf("\tReceive a packet (seq_num = %u, ack_num = %u)\n", rcv_pkt.header.seq_num, rcv_pkt.header.ack_num);
-                rwnd = BUFFER_SIZE - rcv_pkt.header.window_size;
-            }
+            cout<<"Receive three duplicate ACKs"<<endl;
+            cout<<"*****Fast recovery*****"<<endl;
+            cout<<"*****Congestion avoidance*****"<<endl;
+            threshold = cwnd / 2;
+            cwnd = threshold;
+            file_size = rwnd;
+            slow_start = false;
+            congestion_avoidance = true;
+            send_byte_index = rcv_pkt.header.ack_num;
+            dup_ack = 0;
+            DEBUG("find dup_ack\nfile_size %d\n", file_size);
+            continue;
         }
 
         if(slow_start)
@@ -120,7 +157,8 @@ bool client_receive_data()
     int file_size = FILE_SIZE; // bytes
 
     int cwnd = 1, rwnd = BUFFER_SIZE;
-    int receive_byte = 0, send_packet = 0, receive_packet = 0;
+    int before_seq_num = 0, receive_byte = 0, send_packet = 0, receive_packet = 0;
+    int before_receive_byte = 0;
     int request_byte_index = 1;
     int dup_ack = 0;
 
@@ -153,16 +191,19 @@ bool client_receive_data()
         snd_pkt.header.flag = 16; // ack = 16
         snd_pkt.header.window_size = receive_byte;
 
-        if(receive_packet % 2 == 0 || receive_byte == BUFFER_SIZE)
-        {
-            sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
-            send_packet++;
-        }
+        sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
+        send_packet++;
 
-        // buffer full finish
         if(receive_byte == BUFFER_SIZE)
         {
             DEBUG("client_receive_data finish\n");
+
+            snd_pkt.header.seq_num = ++client_seq_num;
+            snd_pkt.header.ack_num = receive_byte + 1;
+            snd_pkt.header.flag = 16; // ack = 16
+
+            sendto(client_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&send_addr, len);
+            send_packet++;
             break;
         }
     }
