@@ -65,6 +65,7 @@ bool server_send_data()
             {
                 sendto(server_sockfd, &snd_pkt, sizeof(snd_pkt), 0, (struct sockaddr *)&client_addr, len);
                 printf("\tSend a packet at : %d byte\n", send_byte_index);
+                send_packet++;
             }
 
             if(dup_map.find(send_byte_index) != dup_map.end())
@@ -73,10 +74,9 @@ bool server_send_data()
             }
             else
             {
-                dup_map.insert(pair<int, int>(send_byte_index, 0));
+                dup_map.insert(pair<int, int>(send_byte_index, -1));
             }
 
-            send_packet++;
             send_byte_index += send_byte;
             file_size -= send_byte;
             rwnd -= send_byte;
@@ -107,10 +107,21 @@ bool server_send_data()
                     DEBUG("find dup_ack %d\n", rcv_pkt.header.ack_num);
                 }
 
-                send_byte_index = rcv_pkt.header.ack_num;
+                //send_byte_index = rcv_pkt.header.ack_num;
             }
 
-            if(receive_packet == send_packet || dup_ack)
+            // drop not use ack
+            if(dup_ack)
+            {
+                while(receive_packet < send_packet && recvfrom(server_sockfd, &rcv_pkt, sizeof(rcv_pkt), 0, (struct sockaddr *)&client_addr, (socklen_t *)&len) != -1)
+                {
+                    receive_packet++;
+                }
+
+                break;
+            }
+
+            if(receive_packet == send_packet)
                 break;
         }
 

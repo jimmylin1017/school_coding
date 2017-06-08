@@ -101,7 +101,7 @@ bool server_send_data()
             }
             else
             {
-                dup_map.insert(pair<int, int>(send_byte_index, 0));
+                dup_map.insert(pair<int, int>(send_byte_index, -1));
             }
 
             send_byte_index += send_byte;
@@ -137,10 +137,10 @@ bool server_send_data()
                     DEBUG("find dup_ack %d\n", rcv_pkt.header.ack_num);
                 }
 
-                send_byte_index = rcv_pkt.header.ack_num;
+                //send_byte_index = rcv_pkt.header.ack_num;
             }
 
-            if(receive_packet == send_packet)
+            if(receive_packet == send_packet || dup_ack)
                 break;
         }
 
